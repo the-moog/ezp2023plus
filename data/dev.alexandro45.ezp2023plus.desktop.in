@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=EZP2023+
+Exec=ezp2023plus
+Icon=dev.alexandro45.ezp2023plus
+Keywords=ezp;ezp2023;
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true
+NoDisplay=true
