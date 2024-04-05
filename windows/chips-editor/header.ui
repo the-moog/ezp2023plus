@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkListHeader">
+        <property name="child">
+            <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <property name="spacing">10sp</property>
+<!--                <property name="homogeneous">True</property>-->
+                <child><object class="GtkLabel"><property name="label">Type</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Manufacturer</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Name</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Chip ID</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Voltage</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Voltage</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Flash size</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Flash page</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Class</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Algorithm</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Delay</property></object></child>
+                <child><object class="GtkLabel"><property name="label">EEPROM size</property></object></child>
+                <child><object class="GtkLabel"><property name="label">EEPROM page</property></object></child>
+                <child><object class="GtkLabel"><property name="label">Extend</property></object></child>
+            </object>
+        </property>
+    </template>
+</interface>

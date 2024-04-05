@@ -1,6 +1,6 @@
 desktop_file = i18n.merge_file(
-  input: 'org.gnome.Adwaita1.Demo.desktop.in',
-  output: 'org.gnome.Adwaita1.Demo.desktop',
+  input: 'dev.alexandro45.ezp2023plus.desktop.in',
+  output: 'dev.alexandro45.ezp2023plus.desktop',
   type: 'desktop',
   po_dir: '../po',
   install: true,
@@ -36,12 +36,12 @@ appdata_config.set('BUILD_DATE', today)
 
 appstream_file = i18n.merge_file(
   input: configure_file(
-    input: 'org.gnome.Adwaita1.Demo.metainfo.xml.in.in',
-    output: 'org.gnome.Adwaita1.Demo.metainfo.xml.in',
+    input: 'dev.alexandro45.ezp2023plus.metainfo.xml.in.in',
+    output: 'dev.alexandro45.ezp2023plus.metainfo.xml.in',
     configuration: appdata_config
   ),
-  output: 'org.gnome.Adwaita1.Demo.metainfo.xml',
-  po_dir: '../../po',
+  output: 'dev.alexandro45.ezp2023plus.metainfo.xml',
+  po_dir: '../po',
   install: true,
   install_dir: datadir / 'metainfo'
 )
