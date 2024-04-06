@@ -155,7 +155,8 @@ chips_editor_list_row_init(ChipsEditorListRow *self) {
  *         -1 if there are more components than expected, and
  *         -2 if there are fewer components than expected.
  */
-int parseName(char name[48], char **clazz, char **manufacturer, char **chip_name) {
+static int
+parseName(char name[48], char **clazz, char **manufacturer, char **chip_name) {
     name[47] = '\0';
     char *str;
     uint8_t i = 0;

@@ -6,10 +6,11 @@
 struct _WindowChipsEditor {
     AdwWindow parent_instance;
 
-    GtkListView *chips_list;
+    GtkColumnView *chips_list;
     GtkToggleButton *search_button;
     GtkSearchBar *chips_searchbar;
     GtkSearchEntry *chips_searchentry;
+    GtkStringFilter *filter;
 };
 
 G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
@@ -37,10 +38,8 @@ selection_changed_cb(GtkSingleSelection *selection_model, guint start_position, 
 static void
 search_text_changed_cb(GtkEditable *editable, gpointer data) {
     printf("search query: %s\n", gtk_editable_get_text(editable));
-//    GsmApplication const *app = static_cast<GsmApplication * >(data);
-//    gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER (gtk_tree_model_sort_get_model(
-//            GTK_TREE_MODEL_SORT(gtk_tree_view_get_model(
-//                    GTK_TREE_VIEW(app->tree))))));
+    WindowChipsEditor *self = ADW_WINDOW_CHIPS_EDITOR(data);
+    gtk_string_filter_set_search(self->filter, gtk_editable_get_text(editable));
 }
 
 static void
@@ -57,18 +56,17 @@ window_chips_editor_init(WindowChipsEditor *self) {
     } else {
         printf("ret is %d\n", ret);
     }
+    free(chips);
 
-    GtkListItemFactory *factory = gtk_builder_list_item_factory_new_from_resource(gtk_builder_cscope_new(),
-                                                                                  "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/row.ui");
-    GtkListItemFactory *headerFactory = gtk_builder_list_item_factory_new_from_resource(gtk_builder_cscope_new(),
-                                                                                        "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/header.ui");
+    GtkExpression *exp = gtk_property_expression_new(CHIPS_EDITOR_TYPE_LIST_ROW, NULL, "name");
+    self->filter = gtk_string_filter_new(exp);
+    gtk_string_filter_set_ignore_case(self->filter, TRUE);
+    GtkFilterListModel *filterModel = gtk_filter_list_model_new(G_LIST_MODEL(store), GTK_FILTER(self->filter));
 
-    GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(store));
+    GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(filterModel));
     g_signal_connect(selection, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
 
-    gtk_list_view_set_factory(self->chips_list, factory);
-    gtk_list_view_set_model(self->chips_list, GTK_SELECTION_MODEL(selection));
-    gtk_list_view_set_header_factory(self->chips_list, headerFactory);
+    gtk_column_view_set_model(self->chips_list, GTK_SELECTION_MODEL(selection));
 
     gtk_search_bar_set_key_capture_widget(self->chips_searchbar, GTK_WIDGET (self));
     g_signal_connect (self->chips_searchentry, "changed", G_CALLBACK(search_text_changed_cb), self);

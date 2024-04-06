@@ -51,7 +51,387 @@
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
                                 <property name="child">
-                                    <object class="GtkListView" id="chips_list"/>
+                                    <object class="GtkColumnView" id="chips_list">
+                                        <property name="show-column-separators">True</property>
+                                        <property name="show-row-separators">True</property>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Type</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="flash_type" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Manufacturer</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="manufacturer" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Name</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="name" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Chip ID</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="chip_id" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Voltage</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="voltage" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Flash size</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="flash_size" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Flash page</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="flash_page" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Class</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="flash_class" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Algorithm</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="algorithm" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Delay</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="delay" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">EEPROM size</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="eeprom_size" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">EEPROM page</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="eeprom_page" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkColumnViewColumn">
+                                                <property name="title">Extend</property>
+                                                <property name="resizable">True</property>
+                                                <property name="fixed-width">100px</property>
+                                                <property name="factory">
+                                                    <object class="GtkBuilderListItemFactory">
+                                                        <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="GtkColumnViewCell">
+        <property name="child">
+            <object class="GtkLabel">
+                <binding name="label">
+                    <lookup name="extend" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+            </object>
+        </property>
+    </template>
+</interface>
+                                                        ]]></property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                    </object>
                                 </property>
                             </object>
                         </child>
