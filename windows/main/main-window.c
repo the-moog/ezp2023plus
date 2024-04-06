@@ -1,27 +1,22 @@
-#include "adw-demo-window.h"
+#include "main-window.h"
 
 #include <glib/gi18n.h>
 
-#include "pages/toasts/adw-demo-page-toasts.h"
-#include "pages/welcome/adw-demo-page-welcome.h"
-
-struct _AdwDemoWindow {
+struct _MainWindow {
     AdwApplicationWindow parent_instance;
 
     GtkWidget *color_scheme_button;
-    AdwDemoPageToasts *toasts_page;
 };
 
-G_DEFINE_FINAL_TYPE (AdwDemoWindow, adw_demo_window, ADW_TYPE_APPLICATION_WINDOW)
+G_DEFINE_FINAL_TYPE (MainWindow, main_window, ADW_TYPE_APPLICATION_WINDOW)
 
 static char *
-get_color_scheme_icon_name(gpointer user_data,
-                           gboolean dark) {
+get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
     return g_strdup (dark ? "light-mode-symbolic" : "dark-mode-symbolic");
 }
 
 static void
-color_scheme_button_clicked_cb(AdwDemoWindow *self) {
+color_scheme_button_clicked_cb(MainWindow *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     if (adw_style_manager_get_dark(manager))
@@ -31,7 +26,7 @@ color_scheme_button_clicked_cb(AdwDemoWindow *self) {
 }
 
 static void
-notify_system_supports_color_schemes_cb(AdwDemoWindow *self) {
+notify_system_supports_color_schemes_cb(MainWindow *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
     gboolean supports = adw_style_manager_get_system_supports_color_schemes(manager);
 
@@ -48,13 +43,13 @@ notify_system_supports_color_schemes_cb(AdwDemoWindow *self) {
 //}
 
 static void
-adw_demo_window_class_init(AdwDemoWindowClass *klass) {
+main_window_class_init(MainWindowClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_q, GDK_CONTROL_MASK, "window.close", NULL);
 
-    gtk_widget_class_set_template_from_resource(widget_class, "/dev/alexandro45/ezp2023plus/ui/adw-demo-window.ui");
-    gtk_widget_class_bind_template_child (widget_class, AdwDemoWindow, color_scheme_button);
+    gtk_widget_class_set_template_from_resource(widget_class, "/dev/alexandro45/ezp2023plus/ui/windows/main/main-window.ui");
+    gtk_widget_class_bind_template_child (widget_class, MainWindow, color_scheme_button);
 //    gtk_widget_class_bind_template_child (widget_class, AdwDemoWindow, split_view);
 //    gtk_widget_class_bind_template_child (widget_class, AdwDemoWindow, content_page);
 //    gtk_widget_class_bind_template_child (widget_class, AdwDemoWindow, stack);
@@ -67,10 +62,8 @@ adw_demo_window_class_init(AdwDemoWindowClass *klass) {
 }
 
 static void
-adw_demo_window_init(AdwDemoWindow *self) {
+main_window_init(MainWindow *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
-
-    g_type_ensure(ADW_TYPE_DEMO_PAGE_WELCOME);
 
     gtk_widget_init_template(GTK_WIDGET (self));
 
@@ -83,7 +76,7 @@ adw_demo_window_init(AdwDemoWindow *self) {
     notify_system_supports_color_schemes_cb(self);
 }
 
-AdwDemoWindow *
-adw_demo_window_new(GtkApplication *application) {
-    return g_object_new(ADW_TYPE_DEMO_WINDOW, "application", application, NULL);
+MainWindow *
+main_window_new(GtkApplication *application) {
+    return g_object_new(MAIN_TYPE_MAIN_WINDOW, "application", application, NULL);
 }

@@ -10,10 +10,8 @@
     <file compressed="true">style-dark.css</file>
   </gresource>
   <gresource prefix="/dev/alexandro45/ezp2023plus/ui">
-    <file preprocess="xml-stripblanks">pages/welcome/adw-demo-page-welcome.ui</file>
     <file preprocess="xml-stripblanks">windows/chips-editor/chips-editor.ui</file>
     <file preprocess="xml-stripblanks">windows/chips-editor/header.ui</file>
-    <file preprocess="xml-stripblanks">adw-demo-preferences-window.ui</file>
-    <file preprocess="xml-stripblanks">adw-demo-window.ui</file>
+    <file preprocess="xml-stripblanks">windows/main/main-window.ui</file>
   </gresource>
 </gresources>

@@ -91,14 +91,13 @@ adwaita_demo_sources = [
     #  'pages/toasts/adw-demo-page-toasts.c',
     #  'pages/view-switcher/adw-demo-page-view-switcher.c',
     #  'pages/view-switcher/adw-view-switcher-demo-window.c',
-    'pages/welcome/adw-demo-page-welcome.c',
+    #   'pages/welcome/adw-demo-page-welcome.c',
     'windows/chips-editor/chips-editor.c',
     'windows/chips-editor/list-row.c',
 
     'main.c',
-    'adw-demo-debug-info.c',
-    'adw-demo-preferences-window.c',
-    'adw-demo-window.c',
+    'debug-info.c',
+    'windows/main/main-window.c',
     demo_config_h,
 ]
 
