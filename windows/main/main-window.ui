@@ -50,8 +50,7 @@
                                 </child>
                                 <child type="end">
                                     <object class="GtkMenuButton">
-                                        <property name="tooltip-text" translatable="yes">Main Menu
-                                        </property>
+                                        <property name="tooltip-text" translatable="yes">Main Menu</property>
                                         <property name="menu-model">primary_menu</property>
                                         <property name="icon-name">open-menu-symbolic</property>
                                         <property name="primary">True</property>
@@ -60,11 +59,130 @@
                             </object>
                         </child>
                         <property name="content">
-                            <object class="AdwStatusPage">
-                                <property name="icon-name">org.gnome.Adwaita1.Demo-symbolic</property>
-                                <property name="title" translatable="yes">Welcome to Adwaita Demo</property>
-                                <property name="description" translatable="yes">This is a tour of the features the library has to offer.
-                                </property>
+                            <object class="GtkBox">
+                                <property name="orientation">horizontal</property>
+                                <child>
+                                    <object class="GtkBox" id="left_panel">
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                            <object class="GtkDropDown">
+                                                <property name="model">
+                                                    <object class="GtkStringList">
+                                                        <items>
+                                                            <item translatable="yes">Factory</item>
+                                                            <item translatable="yes">Home</item>
+                                                            <item translatable="yes">Subway</item>
+                                                        </items>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkDropDown">
+                                                <property name="model">
+                                                    <object class="GtkStringList">
+                                                        <items>
+                                                            <item translatable="yes">Factory</item>
+                                                            <item translatable="yes">Home</item>
+                                                            <item translatable="yes">Subway</item>
+                                                        </items>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkDropDown">
+                                                <property name="model">
+                                                    <object class="GtkStringList">
+                                                        <items>
+                                                            <item translatable="yes">Factory</item>
+                                                            <item translatable="yes">Home</item>
+                                                            <item translatable="yes">Subway</item>
+                                                        </items>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkSearchEntry"></object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkDropDown">
+                                                <property name="model">
+                                                    <object class="GtkStringList">
+                                                        <items>
+                                                            <item translatable="yes">Factory</item>
+                                                            <item translatable="yes">Home</item>
+                                                            <item translatable="yes">Subway</item>
+                                                        </items>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkSpinButton">
+                                                <property name="adjustment">
+                                                    <object class="GtkAdjustment">
+                                                        <property name="lower">0</property>
+                                                        <property name="upper">100000</property>
+                                                        <property name="step-increment">1</property>
+                                                    </object>
+                                                </property>
+                                                <property name="numeric">True</property>
+                                                <property name="snap-to-ticks">True</property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkDropDown">
+                                                <property name="model">
+                                                    <object class="GtkStringList">
+                                                        <items>
+                                                            <item translatable="yes">12 MHz</item>
+                                                            <item translatable="yes">6 MHz</item>
+                                                            <item translatable="yes">3 MHz</item>
+                                                            <item translatable="yes">1.5 MHz</item>
+                                                            <item translatable="yes">750 KHz</item>
+                                                            <item translatable="yes">? KHz</item>
+                                                        </items>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                                <child>
+                                    <object class="GtkBox">
+                                        <property name="name">right_box</property>
+                                        <property name="orientation">horizontal</property>
+                                        <child>
+<!--                                            <object class="GtkScrolledWindow">-->
+<!--                                                <property name="hexpand">True</property>-->
+<!--                                                <property name="vexpand">True</property>-->
+<!--                                                <property name="child">-->
+                                                    <object class="GtkDrawingArea" id="hex_widget">
+                                                        <property name="hexpand">True</property>
+                                                        <property name="vexpand">True</property>
+                                                        <property name="can-focus">True</property>
+                                                    </object>
+<!--                                                </property>-->
+<!--                                            </object>-->
+                                        </child>
+                                        <child>
+                                            <object class="GtkScrollbar" id="scroll_bar">
+                                                <property name="orientation">vertical</property>
+                                                <property name="adjustment">
+                                                    <object class="GtkAdjustment">
+                                                        <property name="lower">0</property>
+<!--                                                        <property name="upper">2</property>-->
+                                                        <property name="page-size">1</property>
+                                                        <property name="page-increment">1</property>
+                                                        <property name="step-increment">1</property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
                             </object>
                         </property>
                     </object>
