@@ -104,11 +104,10 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
     GdkRGBA color;
     MainWindow *mv = MAIN_MAIN_WINDOW(data);
 
-    cairo_set_source_rgb(cr, 1, 1, 1);
+    gtk_widget_get_color(GTK_WIDGET (area), &color);
+    gdk_cairo_set_source_rgba(cr, &color);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, FONT_SIZE);
-
-    fill_buf(mv->hex_buffer);
 
     char buffer[10];
     mv->lines_on_screen_count = height / FONT_SIZE;
@@ -137,10 +136,6 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
         }
         if (i == mv->hex_buffer_size) break;
     }
-
-
-    gtk_widget_get_color(GTK_WIDGET (area), &color);
-    gdk_cairo_set_source_rgba(cr, &color);
 
     cairo_fill(cr);
 }
@@ -237,6 +232,7 @@ main_window_init(MainWindow *self) {
 
     self->hex_buffer_size = 1001;
     self->hex_buffer = g_malloc(self->hex_buffer_size);
+    fill_buf(self->hex_buffer);
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA (self->hex_widget), hex_widget_draw_function, self, NULL);
 
     GtkEventController *scroll = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
