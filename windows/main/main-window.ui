@@ -104,7 +104,7 @@
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkSearchEntry"></object>
+                                            <object class="GtkSearchEntry"/>
                                         </child>
                                         <child>
                                             <object class="GtkDropDown">
@@ -148,6 +148,48 @@
                                                 </property>
                                             </object>
                                         </child>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="homogeneous">True</property>
+                                                <child>
+                                                    <object class="GtkButton" id="test_button">
+                                                        <property name="name">test_button</property>
+                                                        <property name="label">Test</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkButton" id="erase_button">
+                                                        <property name="name">erase_button</property>
+                                                        <property name="label">Erase</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="homogeneous">True</property>
+                                                <child>
+                                                    <object class="GtkButton" id="read_button">
+                                                        <property name="name">read_button</property>
+                                                        <property name="label">Read</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkButton" id="write_button">
+                                                        <property name="name">write_button</property>
+                                                        <property name="label">Write</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkProgressBar" id="progress_bar">
+                                                <property name="name">progress_bar</property>
+                                                <property name="orientation">horizontal</property>
+                                            </object>
+                                        </child>
                                     </object>
                                 </child>
                                 <child>
@@ -155,17 +197,11 @@
                                         <property name="name">right_box</property>
                                         <property name="orientation">horizontal</property>
                                         <child>
-<!--                                            <object class="GtkScrolledWindow">-->
-<!--                                                <property name="hexpand">True</property>-->
-<!--                                                <property name="vexpand">True</property>-->
-<!--                                                <property name="child">-->
-                                                    <object class="GtkDrawingArea" id="hex_widget">
-                                                        <property name="hexpand">True</property>
-                                                        <property name="vexpand">True</property>
-                                                        <property name="can-focus">True</property>
-                                                    </object>
-<!--                                                </property>-->
-<!--                                            </object>-->
+                                            <object class="GtkDrawingArea" id="hex_widget">
+                                                <property name="hexpand">True</property>
+                                                <property name="vexpand">True</property>
+                                                <property name="can-focus">True</property>
+                                            </object>
                                         </child>
                                         <child>
                                             <object class="GtkScrollbar" id="scroll_bar">
@@ -173,7 +209,6 @@
                                                 <property name="adjustment">
                                                     <object class="GtkAdjustment">
                                                         <property name="lower">0</property>
-<!--                                                        <property name="upper">2</property>-->
                                                         <property name="page-size">1</property>
                                                         <property name="page-increment">1</property>
                                                         <property name="step-increment">1</property>

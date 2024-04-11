@@ -8,6 +8,11 @@ struct _MainWindow {
     GtkWidget *color_scheme_button;
     GtkDrawingArea *hex_widget;
     GtkScrollbar *scroll_bar;
+    GtkButton *test_button;
+    GtkButton *erase_button;
+    GtkButton *read_button;
+    GtkButton *write_button;
+    GtkProgressBar *progress_bar;
     char *hex_buffer;
     int hex_buffer_size;
     int viewer_offset;
@@ -62,6 +67,11 @@ main_window_class_init(MainWindowClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, MainWindow, color_scheme_button);
     gtk_widget_class_bind_template_child(widget_class, MainWindow, hex_widget);
     gtk_widget_class_bind_template_child(widget_class, MainWindow, scroll_bar);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, test_button);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, erase_button);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, read_button);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, write_button);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, progress_bar);
 
     gtk_widget_class_bind_template_callback(widget_class, get_color_scheme_icon_name);
     gtk_widget_class_bind_template_callback(widget_class, color_scheme_button_clicked_cb);
@@ -173,8 +183,6 @@ static gboolean scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy
             gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(mv->scroll_bar), mv->viewer_offset);
         }
     }
-//    printf("dx: %f, dy: %f\n", dx, dy);
-
     return TRUE;
 }
 
@@ -193,7 +201,23 @@ scroll_bar_value_cb(GtkAdjustment *adjustment, gpointer user_data) {
     if (prev_viewer_offset != mv->viewer_offset) {
         MAIN_MAIN_WINDOW(user_data)->scroll = 0;
         gtk_widget_queue_draw(GTK_WIDGET(mv->hex_widget));
-//        printf("sbv: %f\n", gtk_adjustment_get_value(adjustment));
+    }
+}
+
+static void
+button_clicked(GtkButton *self, gpointer user_data) {
+    const char *name = gtk_widget_get_name(GTK_WIDGET(self));
+
+    if (!strcmp(name, "test_button")) {
+        printf("Test button clicked!\n");
+    } else if (!strcmp(name, "erase_button")) {
+        printf("Erase button clicked!\n");
+    } else if (!strcmp(name, "read_button")) {
+        printf("Read button clicked!\n");
+    } else if (!strcmp(name, "write_button")) {
+        printf("Write button clicked!\n");
+    } else {
+        g_warning("Unknown button clicked!");
     }
 }
 
@@ -224,6 +248,15 @@ main_window_init(MainWindow *self) {
     gtk_adjustment_set_upper(scroll_adj, (int) (self->hex_buffer_size / BYTES_PER_LINE) +
                                          (self->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
     g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK (scroll_bar_value_cb), self, G_CONNECT_DEFAULT);
+
+    g_signal_connect_object(self->test_button, "clicked", G_CALLBACK (button_clicked), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->erase_button, "clicked", G_CALLBACK (button_clicked), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->read_button, "clicked", G_CALLBACK (button_clicked), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->write_button, "clicked", G_CALLBACK (button_clicked), self, G_CONNECT_DEFAULT);
+
+    gtk_progress_bar_set_fraction(self->progress_bar, 0.2);
+    gtk_progress_bar_set_text(self->progress_bar, "Reading...");
+    gtk_progress_bar_set_show_text(self->progress_bar, TRUE);
 }
 
 MainWindow *

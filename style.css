@@ -1,15 +1,27 @@
 box > dropdown {
-  margin: 5px 10px 5px 10px;
+    margin: 5px 10px 5px 10px;
 }
 
 box > entry.search {
-  margin: 5px 10px 5px 10px;
+    margin: 5px 10px 5px 10px;
 }
 
 box > spinbutton {
-  margin: 5px 10px 5px 10px;
+    margin: 5px 10px 5px 10px;
 }
 
 #right_box {
-  padding: 1px 10px 5px 10px;
+    padding: 1px 10px 5px 10px;
+}
+
+#test_button, #read_button {
+    margin: 5px 5px 5px 10px;
+}
+
+#write_button, #erase_button {
+    margin: 5px 10px 5px 5px;
+}
+
+#progress_bar {
+    margin: 5px 10px 5px 10px;
 }
