@@ -13,6 +13,7 @@ struct _MainWindow {
     GtkButton *read_button;
     GtkButton *write_button;
     GtkProgressBar *progress_bar;
+    GtkButton *status_icon;
     char *hex_buffer;
     int hex_buffer_size;
     int viewer_offset;
@@ -72,6 +73,7 @@ main_window_class_init(MainWindowClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, MainWindow, read_button);
     gtk_widget_class_bind_template_child(widget_class, MainWindow, write_button);
     gtk_widget_class_bind_template_child(widget_class, MainWindow, progress_bar);
+    gtk_widget_class_bind_template_child(widget_class, MainWindow, status_icon);
 
     gtk_widget_class_bind_template_callback(widget_class, get_color_scheme_icon_name);
     gtk_widget_class_bind_template_callback(widget_class, color_scheme_button_clicked_cb);
@@ -253,6 +255,8 @@ main_window_init(MainWindow *self) {
     gtk_progress_bar_set_fraction(self->progress_bar, 0.2);
     gtk_progress_bar_set_text(self->progress_bar, "Reading...");
     gtk_progress_bar_set_show_text(self->progress_bar, TRUE);
+
+    gtk_button_set_icon_name(self->status_icon, "status-error");
 }
 
 MainWindow *

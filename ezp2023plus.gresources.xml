@@ -6,6 +6,8 @@
     <file preprocess="xml-stripblanks" alias="dev.alexandro45.ezp2023plus.metainfo.xml">data/dev.alexandro45.ezp2023plus.metainfo.xml</file>
     <file preprocess="xml-stripblanks">icons/scalable/status/dark-mode-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/status/light-mode-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/status/status-ok.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/status/status-error.svg</file>
     <file compressed="true">style.css</file>
     <file compressed="true">style-dark.css</file>
   </gresource>
