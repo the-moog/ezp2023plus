@@ -219,9 +219,7 @@ compare_strings(gconstpointer a, gconstpointer b) {
 
 static void
 append_string_to_string_list(gpointer data, gpointer user_data) {
-    GtkStringList *l = GTK_STRING_LIST(user_data);
-    gtk_string_list_append(l, data);
-    free(data);
+    gtk_string_list_append(GTK_STRING_LIST(user_data), data);
 }
 
 static gint
@@ -233,6 +231,11 @@ string_key_compare(gconstpointer a, gconstpointer b, gpointer user_data) {
 static void
 destroy_string(gpointer data) {
     free(data);
+}
+
+static void
+destroy_strings_g_list(gpointer data) {
+    g_list_free_full(data, destroy_string);
 }
 
 static void
@@ -250,9 +253,9 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     // copy items to GtkStringList and delete(free) GList.
     GList *types = NULL;
     GTree *manufs = g_tree_new_full(string_key_compare, NULL, destroy_string,
-                                    NULL); //key is "type". stores lists with manufacturers for each type
+                                    destroy_strings_g_list); //key is "type". stores lists with manufacturers for each type
     GTree *names = g_tree_new_full(string_key_compare, NULL, destroy_string,
-                                   NULL); //key is "type,manuf" stores lists with names for each manufacturer
+                                   destroy_strings_g_list); //key is "type,manuf" stores lists with names for each manufacturer
 
     for (int i = 0; i < data->length; ++i) {
         char nm_cp[48];
@@ -290,14 +293,13 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     }
 
     // copy manufacturers and free lists
-    // if mv->models_for_manufacturer_selector != NULL, then delete(free) it
-    mv->models_for_manufacturer_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, NULL);
+    if (mv->models_for_manufacturer_selector != NULL) g_tree_destroy(mv->models_for_manufacturer_selector);
+    mv->models_for_manufacturer_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
     GTreeNode *node = g_tree_node_first(manufs);
     while (node) {
         GList *list = g_tree_node_value(node);
         GtkStringList *string_list = gtk_string_list_new(NULL);
         g_list_foreach(list, append_string_to_string_list, string_list);
-        g_list_free(list);
 
         g_tree_insert(mv->models_for_manufacturer_selector, strdup(g_tree_node_key(node)), string_list);
 
@@ -306,14 +308,13 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     g_tree_destroy(manufs);
 
     // copy names and free lists
-    // if mv->models_for_name_selector != NULL, then delete(free) it
-    mv->models_for_name_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, NULL);
+    if (mv->models_for_name_selector != NULL) g_tree_destroy(mv->models_for_name_selector);
+    mv->models_for_name_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
     node = g_tree_node_first(names);
     while (node) {
         GList *list = g_tree_node_value(node);
         GtkStringList *string_list = gtk_string_list_new(NULL);
         g_list_foreach(list, append_string_to_string_list, string_list);
-        g_list_free(list);
 
         g_tree_insert(mv->models_for_name_selector, strdup(g_tree_node_key(node)), string_list);
 
@@ -324,7 +325,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     // copy types and free temp list
     GtkStringList *types_model = GTK_STRING_LIST(gtk_drop_down_get_model(mv->flash_type_selector));
     g_list_foreach(types, append_string_to_string_list, types_model);
-    g_list_free(types);
+    destroy_strings_g_list(types);
 }
 
 static void
@@ -357,9 +358,10 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *unused, gpointer 
 
 static void
 main_window_finalize(GObject *gobject) {
-    g_free(MAIN_MAIN_WINDOW(gobject)->hex_buffer);
-    //TODO: models_for_manufacturer_selector
-    //TODO: models_for_name_selector
+    MainWindow *mv = MAIN_MAIN_WINDOW(gobject);
+    g_free(mv->hex_buffer);
+    if (mv->models_for_manufacturer_selector != NULL) g_tree_destroy(mv->models_for_manufacturer_selector);
+    if (mv->models_for_name_selector != NULL) g_tree_destroy(mv->models_for_name_selector);
     G_OBJECT_CLASS (main_window_parent_class)->finalize(gobject);
 }
 
