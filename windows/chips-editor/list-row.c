@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include "list-row.h"
+#include <stdio.h>
+#include "utilities.h"
 
 struct _ChipsEditorListRow {
     GObject parent_instance;
@@ -138,45 +139,6 @@ chips_editor_list_row_class_init(ChipsEditorListRowClass *klass) {
 
 static void
 chips_editor_list_row_init(ChipsEditorListRow *self) {
-}
-
-/**
- * @brief Parses a string containing device information into separate components.
- *
- * This function parses a string containing device information separated by commas
- * into separate components: class, manufacturer, and chip name.
- *
- * @param name The input string containing device information.
- * @param clazz Pointer to a character pointer where the parsed class will be stored.
- * @param manufacturer Pointer to a character pointer where the parsed manufacturer will be stored.
- * @param chip_name Pointer to a character pointer where the parsed chip name will be stored.
- *
- * @return Returns 0 upon successful parsing and storing all components,
- *         -1 if there are more components than expected, and
- *         -2 if there are fewer components than expected.
- */
-static int
-parseName(char name[48], char **clazz, char **manufacturer, char **chip_name) {
-    name[47] = '\0';
-    char *str;
-    uint8_t i = 0;
-    while ((str = strtok_r(name, ",", &name)) != NULL) {
-        switch (i) {
-            case 0:
-                *clazz = str;
-                break;
-            case 1:
-                *manufacturer = str;
-                break;
-            case 2:
-                *chip_name = str;
-                return 0;
-            default:
-                return -1;
-        }
-        i++;
-    }
-    return -2;
 }
 
 ChipsEditorListRow *
