@@ -71,7 +71,6 @@ adwaita_demo_sources = [
     'windows/chips-editor/chips-editor.c',
     'windows/chips-editor/list-row.c',
     'main.c',
-    'debug-info.c',
     'windows/main/main-window.c',
     'chips_data_repository.c',
     demo_config_h,

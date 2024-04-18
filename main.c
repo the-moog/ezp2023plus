@@ -4,7 +4,6 @@
 #include <gtk/gtk.h>
 #include <adwaita.h>
 
-#include "debug-info.h"
 #include "windows/chips-editor/chips-editor.h"
 #include "windows/main/main-window.h"
 
@@ -28,15 +27,11 @@ show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
 
     GtkApplication *app = GTK_APPLICATION (user_data);
     GtkWindow *window = gtk_application_get_active_window(app);
-    char *debug_info;
     AdwDialog *about;
-
-    debug_info = generate_debug_info();
 
     about = adw_about_dialog_new_from_appdata("/dev/alexandro45/ezp2023plus/dev.alexandro45.ezp2023plus.metainfo.xml",
                                               NULL);
     adw_about_dialog_set_version(ADW_ABOUT_DIALOG(about), ADW_VERSION_S);
-    adw_about_dialog_set_debug_info(ADW_ABOUT_DIALOG(about), debug_info);
     adw_about_dialog_set_debug_info_filename(ADW_ABOUT_DIALOG(about), "adwaita-1-demo-debug-info.txt");
     adw_about_dialog_set_copyright(ADW_ABOUT_DIALOG(about), "© 2017–2022 Purism SPC");
     adw_about_dialog_set_developers(ADW_ABOUT_DIALOG(about), developers);
@@ -46,8 +41,6 @@ show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
                               "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/");
 
     adw_dialog_present(about, GTK_WIDGET (window));
-
-    g_free(debug_info);
 }
 
 static void
