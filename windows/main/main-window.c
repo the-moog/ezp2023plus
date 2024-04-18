@@ -329,7 +329,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
 }
 
 static void
-dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *unused, gpointer user_data) {
+dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpointer user_data) {
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
     MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
 

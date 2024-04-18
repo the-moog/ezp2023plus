@@ -1,5 +1,3 @@
-#include "config.h"
-
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <adwaita.h>
@@ -54,9 +52,9 @@ main(int argc, char **argv) {
     AdwApplication *app;
     int status;
     static GActionEntry app_entries[] = {
-            {"inspector",   show_inspector,    NULL, NULL, NULL},
+            {"inspector",    show_inspector,    NULL, NULL, NULL},
             {"chips_editor", show_chips_editor, NULL, NULL, NULL},
-            {"about",       show_about,        NULL, NULL, NULL},
+            {"about",        show_about,        NULL, NULL, NULL},
     };
 
     app = adw_application_new("dev.alexandro45.ezp2023plus", G_APPLICATION_NON_UNIQUE);

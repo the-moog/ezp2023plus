@@ -17,9 +17,10 @@ enum {
 
 static guint signals[LAST_SIGNAL] = {0};
 
-static guint signal_new(const gchar *name, GType itype, GSignalFlags signal_flags,
-                        gpointer class_closure, GSignalAccumulator acc, gpointer accu_data,
-                        GSignalCMarshaller c_marshaller, GType return_type, guint n_params, ...) {
+static guint
+signal_new(const gchar *name, GType itype, GSignalFlags signal_flags,
+           gpointer class_closure, GSignalAccumulator acc, gpointer accu_data,
+           GSignalCMarshaller c_marshaller, GType return_type, guint n_params, ...) {
     guint signal_id;
     va_list var_args;
     va_start(var_args, n_params);
@@ -47,7 +48,8 @@ chips_data_repository_new(const char *file_path) {
     return obj;
 }
 
-int chips_data_repository_read(ChipsDataRepository *self) {
+int
+chips_data_repository_read(ChipsDataRepository *self) {
     if (self->chips) {
         free(self->chips);
         self->chips = NULL;
@@ -70,24 +72,28 @@ int chips_data_repository_read(ChipsDataRepository *self) {
     }
 }
 
-int chips_data_repository_save(ChipsDataRepository *self) {
+int
+chips_data_repository_save(ChipsDataRepository *self) {
     if (!self->chips) {
         return 0;
     }
     return ezp_chips_data_write(self->chips, self->chips_count, self->file_path);
 }
 
-int chips_data_repository_add(ChipsDataRepository *self, ezp_chip_data *data) {
+int
+chips_data_repository_add(ChipsDataRepository *self, ezp_chip_data *data) {
     g_warning("Not implemented");
     return 0;
 }
 
-int chips_data_repository_edit(ChipsDataRepository *self, int index, ezp_chip_data *data) {
+int
+chips_data_repository_edit(ChipsDataRepository *self, int index, ezp_chip_data *data) {
     g_warning("Not implemented");
     return 0;
 }
 
-int chips_data_repository_delete(ChipsDataRepository *self, int index) {
+int
+chips_data_repository_delete(ChipsDataRepository *self, int index) {
     g_warning("Not implemented");
     return 0;
 }
