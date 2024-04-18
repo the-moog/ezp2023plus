@@ -6,7 +6,7 @@ project('libadwaita', 'c',
 )
 
 if get_option('buildtype') == 'custom'
-    add_project_arguments('-Wall -Wextra -Ofast', '-g3', language : 'c')
+    add_project_arguments('-Wall', '-Wextra', '-O0', '-ggdb', language : 'c')
 endif
 
 version_arr = meson.project_version().split('-')[0].split('.')
@@ -68,36 +68,12 @@ adwaita_demo_resources = gnome.compile_resources(
 
 adwaita_demo_sources = [
     adwaita_demo_resources,
-
-    #  'pages/about/adw-demo-page-about.c',
-    #  'pages/animations/adw-demo-page-animations.c',
-    #  'pages/avatar/adw-demo-page-avatar.c',
-    #  'pages/banners/adw-demo-page-banners.c',
-    #  'pages/buttons/adw-demo-page-buttons.c',
-    #  'pages/carousel/adw-demo-page-carousel.c',
-    #  'pages/clamp/adw-demo-page-clamp.c',
-    #  'pages/dialogs/adw-demo-page-dialogs.c',
-    #  'pages/lists/adw-demo-page-lists.c',
-    #  'pages/navigation-view/adw-demo-page-navigation-view.c',
-    #  'pages/navigation-view/adw-navigation-view-demo-window.c',
-    #  'pages/split-views/adw-demo-page-split-views.c',
-    #  'pages/split-views/adw-navigation-split-view-demo-window.c',
-    #  'pages/split-views/adw-overlay-split-view-demo-window.c',
-    #  'pages/styles/adw-demo-page-styles.c',
-    #  'pages/styles/adw-style-demo-window.c',
-    #  'pages/tab-view/adw-demo-page-tab-view.c',
-    #  'pages/tab-view/adw-tab-view-demo-page.c',
-    #  'pages/tab-view/adw-tab-view-demo-window.c',
-    #  'pages/toasts/adw-demo-page-toasts.c',
-    #  'pages/view-switcher/adw-demo-page-view-switcher.c',
-    #  'pages/view-switcher/adw-view-switcher-demo-window.c',
-    #   'pages/welcome/adw-demo-page-welcome.c',
     'windows/chips-editor/chips-editor.c',
     'windows/chips-editor/list-row.c',
-
     'main.c',
     'debug-info.c',
     'windows/main/main-window.c',
+    'chips_data_repository.c',
     demo_config_h,
 ]
 

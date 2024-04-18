@@ -70,40 +70,31 @@
                                     <object class="GtkBox" id="left_panel">
                                         <property name="orientation">vertical</property>
                                         <child>
-                                            <object class="GtkDropDown">
+                                            <object class="GtkDropDown" id="flash_type_selector">
+                                                <property name="name">flash_type_selector</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
-                                                        <items>
-                                                            <item translatable="yes">Factory</item>
-                                                            <item translatable="yes">Home</item>
-                                                            <item translatable="yes">Subway</item>
-                                                        </items>
+
                                                     </object>
                                                 </property>
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkDropDown">
+                                            <object class="GtkDropDown" id="flash_manufacturer_selector">
+                                                <property name="name">flash_manufacturer_selector</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
-                                                        <items>
-                                                            <item translatable="yes">Factory</item>
-                                                            <item translatable="yes">Home</item>
-                                                            <item translatable="yes">Subway</item>
-                                                        </items>
+
                                                     </object>
                                                 </property>
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkDropDown">
+                                            <object class="GtkDropDown" id="flash_name_selector">
+                                                <property name="name">flash_name_selector</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
-                                                        <items>
-                                                            <item translatable="yes">Factory</item>
-                                                            <item translatable="yes">Home</item>
-                                                            <item translatable="yes">Subway</item>
-                                                        </items>
+
                                                     </object>
                                                 </property>
                                             </object>
