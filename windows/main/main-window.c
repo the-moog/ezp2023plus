@@ -3,6 +3,7 @@
 #include "ezp_chips_data_file.h"
 #include "chips_data_repository.h"
 #include "utilities.h"
+#include "gtk_string_list_extension.h"
 
 struct _MainWindow {
     AdwApplicationWindow parent_instance;
@@ -29,7 +30,9 @@ struct _MainWindow {
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
 
-    char selected_chip_full_name[48];
+    char selected_chip_type[48];
+    char selected_chip_manuf[48];
+    char selected_chip_name[48];
 
     ChipsDataRepository *repo;
 };
@@ -321,9 +324,35 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     g_tree_destroy(names);
 
     // copy types and free temp list
-    GtkStringList *types_model = GTK_STRING_LIST(gtk_drop_down_get_model(mv->flash_type_selector));
+    GtkStringList *types_model = gtk_string_list_new(NULL);
     g_list_foreach(types, append_string_to_string_list, types_model);
     destroy_strings_g_list(types);
+
+    // find prev type item
+    int t_pos = gtk_string_list_index_of(types_model, mv->selected_chip_type);
+
+    // find prev manuf item
+    GtkStringList *manufs_model = g_tree_lookup(mv->models_for_manufacturer_selector, mv->selected_chip_type);
+    int m_pos = manufs_model ? gtk_string_list_index_of(manufs_model, mv->selected_chip_manuf) : -1;
+
+    // find prev name item
+    char key[48];
+    strlcpy(key, mv->selected_chip_type, 48);
+    strlcat(key, ",", 48);
+    strlcat(key, mv->selected_chip_manuf, 48);
+
+    GtkStringList *names_model = g_tree_lookup(mv->models_for_name_selector, key);
+    int n_pos = names_model ? gtk_string_list_index_of(names_model, mv->selected_chip_name) : -1;
+
+    //set models
+    gtk_drop_down_set_model(mv->flash_type_selector, G_LIST_MODEL(types_model));
+    if (manufs_model) gtk_drop_down_set_model(mv->flash_manufacturer_selector, G_LIST_MODEL(manufs_model));
+    if (names_model) gtk_drop_down_set_model(mv->flash_name_selector, G_LIST_MODEL(names_model));
+
+    //set positions
+    if (t_pos >= 0) gtk_drop_down_set_selected(mv->flash_type_selector, t_pos);
+    if (m_pos >= 0) gtk_drop_down_set_selected(mv->flash_manufacturer_selector, m_pos);
+    if (n_pos >= 0) gtk_drop_down_set_selected(mv->flash_name_selector, n_pos);
 }
 
 static void
@@ -332,10 +361,10 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpoint
     MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
 
     if (!strcmp(name, "flash_type_selector")) {
-        GtkStringObject *selected = gtk_drop_down_get_selected_item(self);
-        gtk_drop_down_set_model(mv->flash_manufacturer_selector, g_tree_lookup(mv->models_for_manufacturer_selector,
-                                                                               gtk_string_object_get_string(selected)));
-        printf("Flash type selected!\n");
+        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(self);
+        gtk_drop_down_set_model(mv->flash_manufacturer_selector,
+                                g_tree_lookup(mv->models_for_manufacturer_selector,
+                                              gtk_string_object_get_string(selected_type)));
     } else if (!strcmp(name, "flash_manufacturer_selector")) {
         GtkStringObject *selected_type = gtk_drop_down_get_selected_item(mv->flash_type_selector);
         GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(self);
@@ -345,10 +374,16 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpoint
         strlcat(key, gtk_string_object_get_string(selected_manuf), 48);
 
         gtk_drop_down_set_model(mv->flash_name_selector, g_tree_lookup(mv->models_for_name_selector, key));
-        printf("Flash manufacturer selected!\n");
     } else if (!strcmp(name, "flash_name_selector")) {
-        GtkStringObject *selected = gtk_drop_down_get_selected_item(self);
-        printf("Flash name selected: %s\n", gtk_string_object_get_string(selected));
+        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(mv->flash_type_selector);
+        GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(mv->flash_manufacturer_selector);
+        GtkStringObject *selected_name = gtk_drop_down_get_selected_item(self);
+
+        strlcpy(mv->selected_chip_type, gtk_string_object_get_string(selected_type), 48);
+        strlcpy(mv->selected_chip_manuf, gtk_string_object_get_string(selected_manuf), 48);
+        strlcpy(mv->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
+
+        printf("Flash selected: %s,%s,%s\n", mv->selected_chip_type, mv->selected_chip_manuf, mv->selected_chip_name);
     } else {
         g_warning("Unknown selector!");
     }

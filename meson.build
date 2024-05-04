@@ -74,6 +74,7 @@ adwaita_demo_sources = [
     'windows/main/main-window.c',
     'chips_data_repository.c',
     'utilities.c',
+    'gtk_string_list_extension.c',
     demo_config_h,
 ]
 

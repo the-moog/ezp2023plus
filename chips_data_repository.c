@@ -45,7 +45,20 @@ ChipsDataRepository *
 chips_data_repository_new(const char *file_path) {
     ChipsDataRepository *obj = g_object_new(DATA_TYPE_CHIPS_DATA_REPOSITORY, NULL);
     obj->file_path = file_path;
+    obj->chips = NULL;
+    obj->chips_count = 0;
     return obj;
+}
+
+void
+emit_chips_list(ChipsDataRepository *self) {
+    chips_list *list = malloc(sizeof(chips_list));
+    list->data = self->chips;
+    list->length = self->chips_count;
+
+    g_signal_emit_by_name(self, "chips-list", list);
+
+    free(list);
 }
 
 int
@@ -53,19 +66,13 @@ chips_data_repository_read(ChipsDataRepository *self) {
     if (self->chips) {
         free(self->chips);
         self->chips = NULL;
+        self->chips_count = 0;
     }
 
     int ret = ezp_chips_data_read(&self->chips, self->file_path);
     if (ret >= 0) {
         self->chips_count = ret;
-
-        chips_list *list = malloc(sizeof(chips_list));
-        list->data = self->chips;
-        list->length = ret;
-
-        g_signal_emit_by_name(self, "chips-list", list);
-
-        free(list);
+        emit_chips_list(self);
         return 0;
     } else {
         return ret;
@@ -81,19 +88,62 @@ chips_data_repository_save(ChipsDataRepository *self) {
 }
 
 int
-chips_data_repository_add(ChipsDataRepository *self, ezp_chip_data *data) {
-    g_warning("Not implemented");
-    return 0;
+chips_data_repository_add(ChipsDataRepository *self, const ezp_chip_data *data) {
+    if (!self->chips) {
+        self->chips = malloc(sizeof(ezp_chip_data));
+        self->chips_count = 1;
+        memcpy(self->chips, data, sizeof(ezp_chip_data));
+        emit_chips_list(self);
+        return 0;
+    } else {
+        ezp_chip_data *new_chips = reallocarray(self->chips, self->chips_count + 1, sizeof(ezp_chip_data));
+        if (new_chips) {
+            memcpy(&new_chips[self->chips_count], data, sizeof(ezp_chip_data));
+            self->chips = new_chips;
+            self->chips_count++;
+            emit_chips_list(self);
+            return 0;
+        }
+        return -1;
+    }
 }
 
 int
-chips_data_repository_edit(ChipsDataRepository *self, int index, ezp_chip_data *data) {
-    g_warning("Not implemented");
-    return 0;
+chips_data_repository_edit(ChipsDataRepository *self, int index, const ezp_chip_data *data) {
+    if (index >= 0 && index < self->chips_count) {
+        memcpy(&self->chips[index], data, sizeof(ezp_chip_data));
+        emit_chips_list(self);
+        return 0;
+    }
+    return -1;
 }
 
 int
 chips_data_repository_delete(ChipsDataRepository *self, int index) {
-    g_warning("Not implemented");
-    return 0;
+    if (!self->chips) return -1;
+    if (index < 0 || index >= self->chips_count) return -2;
+
+    if (self->chips_count == 1) {
+        free(self->chips);
+        self->chips = NULL;
+        self->chips_count = 0;
+        emit_chips_list(self);
+        return 0;
+    } else {
+        void *dest = &self->chips[index];
+        void *src = dest + sizeof(ezp_chip_data);
+        int count = self->chips_count - index;
+        if (count < 0) g_error("something fucked up");
+
+        if (count > 0) memcpy(dest, src, self->chips_count - index - 1);
+
+        ezp_chip_data *new_chips = reallocarray(self->chips, self->chips_count - 1, sizeof(ezp_chip_data));
+        if (new_chips) {
+            self->chips = new_chips;
+            self->chips_count--;
+            emit_chips_list(self);
+            return 0;
+        }
+        return -3;
+    }
 }
