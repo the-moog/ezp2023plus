@@ -286,9 +286,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
         if (!ptr) {
             g_tree_insert(names, strdup(type), g_list_append(NULL, strdup(name)));
         } else {
-            if (g_list_find_custom(ptr, name, compare_strings) == NULL) { // avoiding duplicates
-                g_list_append(ptr, strdup(name));
-            }
+            g_list_append(ptr, strdup(name));
         }
     }
 
