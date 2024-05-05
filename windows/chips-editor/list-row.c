@@ -173,20 +173,17 @@ chips_editor_list_row_new(const ezp_chip_data *data) {
 
 void
 chips_editor_list_row_set_flash_type(ChipsEditorListRow *self, const char *flash_type) {
-    strncpy(self->flash_type, flash_type, 48);
-    self->flash_type[47] = '\0';
+    strlcpy(self->flash_type, flash_type, 48);
 }
 
 void
 chips_editor_list_row_set_manufacturer(ChipsEditorListRow *self, const char *manufacturer) {
-    strncpy(self->manufacturer, manufacturer, 48);
-    self->manufacturer[47] = '\0';
+    strlcpy(self->manufacturer, manufacturer, 48);
 }
 
 void
 chips_editor_list_row_set_name(ChipsEditorListRow *self, const char *name) {
-    strncpy(self->name, name, 48);
-    self->name[47] = '\0';
+    strlcpy(self->name, name, 48);
 }
 
 const char *
