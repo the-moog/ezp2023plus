@@ -78,14 +78,15 @@ adwaita_demo_sources = [
     demo_config_h,
 ]
 
+cmake = import('cmake')
+libezp_sub_proj = cmake.subproject('libezp2023plus')
+libezp2023plus_dep = libezp_sub_proj.dependency('ezp2023plus')
+
 c = meson.get_compiler('c')
-ezplib = meson.current_source_dir() + './lib/'
-libezp2023plus_dep = c.find_library('ezp2023plus', dirs : ezplib)
 libadwaita_dep = dependency('libadwaita-1', version : '>= 1.2')
 
-adwaita_demo = executable('ezp2023plus'.format(apiversion),
+adwaita_demo = executable('appezp2023plus'.format(apiversion),
                           adwaita_demo_sources,
                           dependencies : [libadwaita_dep, libezp2023plus_dep],
                           install : true,
-                          include_directories : include_directories('include'),
 )
