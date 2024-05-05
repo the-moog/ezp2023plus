@@ -20,7 +20,7 @@
             </item>
         </section>
     </menu>
-    <template class="MainWindow" parent="AdwApplicationWindow">
+    <template class="WindowMain" parent="AdwApplicationWindow">
         <property name="title" translatable="yes">EZP2023+</property>
         <property name="default_width">800</property>
         <property name="default_height">576</property>
@@ -44,7 +44,7 @@
                                                      function="get_color_scheme_icon_name">
                                                 <lookup name="dark" type="AdwStyleManager">
                                                     <lookup name="style-manager" type="AdwApplication">
-                                                        <lookup name="application">MainWindow</lookup>
+                                                        <lookup name="application">WindowMain</lookup>
                                                     </lookup>
                                                 </lookup>
                                             </closure>

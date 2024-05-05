@@ -5,7 +5,7 @@
 #include "utilities.h"
 #include "gtk_string_list_extension.h"
 
-struct _MainWindow {
+struct _WindowMain {
     AdwApplicationWindow parent_instance;
 
     GtkWidget *color_scheme_button;
@@ -37,7 +37,7 @@ struct _MainWindow {
     ChipsDataRepository *repo;
 };
 
-G_DEFINE_FINAL_TYPE (MainWindow, main_window, ADW_TYPE_APPLICATION_WINDOW)
+G_DEFINE_FINAL_TYPE (WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
 
 static char *
 get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
@@ -45,7 +45,7 @@ get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
 }
 
 static void
-color_scheme_button_clicked_cb(MainWindow *self) {
+color_scheme_button_clicked_cb(WindowMain *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     if (adw_style_manager_get_dark(manager))
@@ -55,7 +55,7 @@ color_scheme_button_clicked_cb(MainWindow *self) {
 }
 
 static void
-notify_system_supports_color_schemes_cb(MainWindow *self) {
+notify_system_supports_color_schemes_cb(WindowMain *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
     gboolean supports = adw_style_manager_get_system_supports_color_schemes(manager);
 
@@ -77,7 +77,7 @@ notify_system_supports_color_schemes_cb(MainWindow *self) {
 static void
 hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
     GdkRGBA color;
-    MainWindow *mv = MAIN_MAIN_WINDOW(data);
+    WindowMain *wm = EZP_WINDOW_MAIN(data);
 
     gtk_widget_get_color(GTK_WIDGET (area), &color);
     gdk_cairo_set_source_rgba(cr, &color);
@@ -85,9 +85,9 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
     cairo_set_font_size(cr, FONT_SIZE);
 
     char buffer[10];
-    mv->lines_on_screen_count = height / FONT_SIZE;
-    int i = mv->viewer_offset * BYTES_PER_LINE;
-    for (int y = 0; y < mv->lines_on_screen_count; ++y) {
+    wm->lines_on_screen_count = height / FONT_SIZE;
+    int i = wm->viewer_offset * BYTES_PER_LINE;
+    for (int y = 0; y < wm->lines_on_screen_count; ++y) {
 
         //line numbers
         sprintf(buffer, "%04X", i & 0xffff);
@@ -96,15 +96,15 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
 
         for (int x = 0; x < BYTES_PER_LINE; ++x) {
             //hex
-            sprintf(buffer, "%02X", mv->hex_buffer[i] & 0xff);
+            sprintf(buffer, "%02X", wm->hex_buffer[i] & 0xff);
             cairo_move_to(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
                           y * FONT_SIZE + FONT_SIZE);
             cairo_show_text(cr, buffer);
 
             i++;
-            if (i == mv->hex_buffer_size) break;
+            if (i == wm->hex_buffer_size) break;
         }
-        if (i == mv->hex_buffer_size) break;
+        if (i == wm->hex_buffer_size) break;
     }
 
     cairo_fill(cr);
@@ -112,41 +112,41 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
 
 static gboolean
 hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpointer user_data) {
-    MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
-    mv->scroll += dy;
+    wm->scroll += dy;
     if (gtk_event_controller_scroll_get_unit(self) == GDK_SCROLL_UNIT_SURFACE) {
-        if (fabs(mv->scroll) >= FONT_SIZE) {
-            int prev_viewer_offset = mv->viewer_offset;
+        if (fabs(wm->scroll) >= FONT_SIZE) {
+            int prev_viewer_offset = wm->viewer_offset;
 
-            while (fabs(mv->scroll) >= FONT_SIZE) {
-                mv->viewer_offset += mv->scroll > 0 ? 1 : -1;
-                if (mv->scroll > 0) mv->scroll -= FONT_SIZE;
-                else if (mv->scroll < 0) mv->scroll += FONT_SIZE;
+            while (fabs(wm->scroll) >= FONT_SIZE) {
+                wm->viewer_offset += wm->scroll > 0 ? 1 : -1;
+                if (wm->scroll > 0) wm->scroll -= FONT_SIZE;
+                else if (wm->scroll < 0) wm->scroll += FONT_SIZE;
             }
 
-            if (mv->viewer_offset < 0) mv->viewer_offset = 0;
-            if (mv->viewer_offset > mv->hex_buffer_size / BYTES_PER_LINE)
-                mv->viewer_offset = mv->hex_buffer_size / BYTES_PER_LINE;
+            if (wm->viewer_offset < 0) wm->viewer_offset = 0;
+            if (wm->viewer_offset > wm->hex_buffer_size / BYTES_PER_LINE)
+                wm->viewer_offset = wm->hex_buffer_size / BYTES_PER_LINE;
 
-            if (mv->viewer_offset != prev_viewer_offset) {
-                gtk_widget_queue_draw(GTK_WIDGET(mv->hex_widget));
-                gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(mv->scroll_bar), mv->viewer_offset);
+            if (wm->viewer_offset != prev_viewer_offset) {
+                gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
+                gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), wm->viewer_offset);
             }
         }
     } else {
-        int prev_viewer_offset = mv->viewer_offset;
+        int prev_viewer_offset = wm->viewer_offset;
 
-        mv->viewer_offset += mv->scroll > 0 ? 1 : -1;
-        mv->scroll = 0;
+        wm->viewer_offset += wm->scroll > 0 ? 1 : -1;
+        wm->scroll = 0;
 
-        if (mv->viewer_offset < 0) mv->viewer_offset = 0;
-        if (mv->viewer_offset > mv->hex_buffer_size / BYTES_PER_LINE)
-            mv->viewer_offset = mv->hex_buffer_size / BYTES_PER_LINE;
+        if (wm->viewer_offset < 0) wm->viewer_offset = 0;
+        if (wm->viewer_offset > wm->hex_buffer_size / BYTES_PER_LINE)
+            wm->viewer_offset = wm->hex_buffer_size / BYTES_PER_LINE;
 
-        if (mv->viewer_offset != prev_viewer_offset) {
-            gtk_widget_queue_draw(GTK_WIDGET(mv->hex_widget));
-            gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(mv->scroll_bar), mv->viewer_offset);
+        if (wm->viewer_offset != prev_viewer_offset) {
+            gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
+            gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), wm->viewer_offset);
         }
     }
     return TRUE;
@@ -154,24 +154,24 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpo
 
 static void
 hex_widget_scroll_begin_cb(GtkEventControllerScroll *self, gpointer user_data) {
-    MAIN_MAIN_WINDOW(user_data)->scroll = 0;
+    EZP_WINDOW_MAIN(user_data)->scroll = 0;
 }
 
 static void
 scroll_bar_value_changed_cb(GtkAdjustment *adjustment, gpointer user_data) {
-    MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
-    int prev_viewer_offset = mv->viewer_offset;
-    mv->viewer_offset = (int) gtk_adjustment_get_value(adjustment);
+    int prev_viewer_offset = wm->viewer_offset;
+    wm->viewer_offset = (int) gtk_adjustment_get_value(adjustment);
 
-    if (prev_viewer_offset != mv->viewer_offset) {
-        MAIN_MAIN_WINDOW(user_data)->scroll = 0;
-        gtk_widget_queue_draw(GTK_WIDGET(mv->hex_widget));
+    if (prev_viewer_offset != wm->viewer_offset) {
+        EZP_WINDOW_MAIN(user_data)->scroll = 0;
+        gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
     }
 }
 
 static void
-main_window_button_clicked_cb(GtkButton *self, gpointer user_data) {
+window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
 
     if (!strcmp(name, "test_button")) {
@@ -244,7 +244,7 @@ destroy_strings_g_list(gpointer data) {
 static void
 chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user_data) {
     ezp_chip_data *chips = data->data;
-    MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
     // STEP 1 - compute dropdown items
     // at first, we need to get list of types
@@ -295,30 +295,30 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     }
 
     // copy manufacturers and free lists
-    if (mv->models_for_manufacturer_selector != NULL) g_tree_destroy(mv->models_for_manufacturer_selector);
-    mv->models_for_manufacturer_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
+    if (wm->models_for_manufacturer_selector != NULL) g_tree_destroy(wm->models_for_manufacturer_selector);
+    wm->models_for_manufacturer_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
     GTreeNode *node = g_tree_node_first(manufs);
     while (node) {
         GList *list = g_tree_node_value(node);
         GtkStringList *string_list = gtk_string_list_new(NULL);
         g_list_foreach(list, append_string_to_string_list, string_list);
 
-        g_tree_insert(mv->models_for_manufacturer_selector, strdup(g_tree_node_key(node)), string_list);
+        g_tree_insert(wm->models_for_manufacturer_selector, strdup(g_tree_node_key(node)), string_list);
 
         node = g_tree_node_next(node);
     }
     g_tree_destroy(manufs);
 
     // copy names and free lists
-    if (mv->models_for_name_selector != NULL) g_tree_destroy(mv->models_for_name_selector);
-    mv->models_for_name_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
+    if (wm->models_for_name_selector != NULL) g_tree_destroy(wm->models_for_name_selector);
+    wm->models_for_name_selector = g_tree_new_full(string_key_compare, NULL, destroy_string, g_object_unref);
     node = g_tree_node_first(names);
     while (node) {
         GList *list = g_tree_node_value(node);
         GtkStringList *string_list = gtk_string_list_new(NULL);
         g_list_foreach(list, append_string_to_string_list, string_list);
 
-        g_tree_insert(mv->models_for_name_selector, strdup(g_tree_node_key(node)), string_list);
+        g_tree_insert(wm->models_for_name_selector, strdup(g_tree_node_key(node)), string_list);
 
         node = g_tree_node_next(node);
     }
@@ -335,30 +335,30 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     // set selected items by its position
 
     // find position of previously selected type item
-    int t_pos = gtk_string_list_index_of(types_model, mv->selected_chip_type);
+    int t_pos = gtk_string_list_index_of(types_model, wm->selected_chip_type);
 
     // find model for dropdown and position of previously selected manuf item
-    GtkStringList *manufs_model = g_tree_lookup(mv->models_for_manufacturer_selector, mv->selected_chip_type);
-    int m_pos = manufs_model ? gtk_string_list_index_of(manufs_model, mv->selected_chip_manuf) : -1;
+    GtkStringList *manufs_model = g_tree_lookup(wm->models_for_manufacturer_selector, wm->selected_chip_type);
+    int m_pos = manufs_model ? gtk_string_list_index_of(manufs_model, wm->selected_chip_manuf) : -1;
 
     // find model for dropdown and position of previously selected name item
     char key[48];
-    strlcpy(key, mv->selected_chip_type, 48);
+    strlcpy(key, wm->selected_chip_type, 48);
     strlcat(key, ",", 48);
-    strlcat(key, mv->selected_chip_manuf, 48);
+    strlcat(key, wm->selected_chip_manuf, 48);
 
-    GtkStringList *names_model = g_tree_lookup(mv->models_for_name_selector, key);
-    int n_pos = names_model ? gtk_string_list_index_of(names_model, mv->selected_chip_name) : -1;
+    GtkStringList *names_model = g_tree_lookup(wm->models_for_name_selector, key);
+    int n_pos = names_model ? gtk_string_list_index_of(names_model, wm->selected_chip_name) : -1;
 
     //set models
-    gtk_drop_down_set_model(mv->flash_type_selector, G_LIST_MODEL(types_model));
-    if (manufs_model) gtk_drop_down_set_model(mv->flash_manufacturer_selector, G_LIST_MODEL(manufs_model));
-    if (names_model) gtk_drop_down_set_model(mv->flash_name_selector, G_LIST_MODEL(names_model));
+    gtk_drop_down_set_model(wm->flash_type_selector, G_LIST_MODEL(types_model));
+    if (manufs_model) gtk_drop_down_set_model(wm->flash_manufacturer_selector, G_LIST_MODEL(manufs_model));
+    if (names_model) gtk_drop_down_set_model(wm->flash_name_selector, G_LIST_MODEL(names_model));
 
     //set positions
-    if (t_pos >= 0) gtk_drop_down_set_selected(mv->flash_type_selector, t_pos);
-    if (m_pos >= 0) gtk_drop_down_set_selected(mv->flash_manufacturer_selector, m_pos);
-    if (n_pos >= 0) gtk_drop_down_set_selected(mv->flash_name_selector, n_pos);
+    if (t_pos >= 0) gtk_drop_down_set_selected(wm->flash_type_selector, t_pos);
+    if (m_pos >= 0) gtk_drop_down_set_selected(wm->flash_manufacturer_selector, m_pos);
+    if (n_pos >= 0) gtk_drop_down_set_selected(wm->flash_name_selector, n_pos);
 }
 
 static void
@@ -366,75 +366,75 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpoint
     // warning: dropdown_selected_item_changed_cb is called multiple times during filling dropdowns with data, so we
     // should not use this callback to do any actions. we just save selected strings and then use them when user clicks on the button
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
-    MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
     if (!strcmp(name, "flash_type_selector")) {
         GtkStringObject *selected_type = gtk_drop_down_get_selected_item(self);
-        gtk_drop_down_set_model(mv->flash_manufacturer_selector,
-                                g_tree_lookup(mv->models_for_manufacturer_selector,
+        gtk_drop_down_set_model(wm->flash_manufacturer_selector,
+                                g_tree_lookup(wm->models_for_manufacturer_selector,
                                               gtk_string_object_get_string(selected_type)));
     } else if (!strcmp(name, "flash_manufacturer_selector")) {
-        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(mv->flash_type_selector);
+        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(wm->flash_type_selector);
         GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(self);
         char key[48];
         strlcpy(key, gtk_string_object_get_string(selected_type), 48);
         strlcat(key, ",", 48);
         strlcat(key, gtk_string_object_get_string(selected_manuf), 48);
 
-        gtk_drop_down_set_model(mv->flash_name_selector, g_tree_lookup(mv->models_for_name_selector, key));
+        gtk_drop_down_set_model(wm->flash_name_selector, g_tree_lookup(wm->models_for_name_selector, key));
     } else if (!strcmp(name, "flash_name_selector")) {
-        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(mv->flash_type_selector);
-        GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(mv->flash_manufacturer_selector);
+        GtkStringObject *selected_type = gtk_drop_down_get_selected_item(wm->flash_type_selector);
+        GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(wm->flash_manufacturer_selector);
         GtkStringObject *selected_name = gtk_drop_down_get_selected_item(self);
 
-        strlcpy(mv->selected_chip_type, gtk_string_object_get_string(selected_type), 48);
-        strlcpy(mv->selected_chip_manuf, gtk_string_object_get_string(selected_manuf), 48);
-        strlcpy(mv->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
+        strlcpy(wm->selected_chip_type, gtk_string_object_get_string(selected_type), 48);
+        strlcpy(wm->selected_chip_manuf, gtk_string_object_get_string(selected_manuf), 48);
+        strlcpy(wm->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
 
-        printf("Flash selected: %s,%s,%s\n", mv->selected_chip_type, mv->selected_chip_manuf, mv->selected_chip_name);
+        printf("Flash selected: %s,%s,%s\n", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
     } else {
         g_warning("Unknown selector!");
     }
 }
 
 static void
-main_window_finalize(GObject *gobject) {
-    MainWindow *mv = MAIN_MAIN_WINDOW(gobject);
-    g_free(mv->hex_buffer);
-    if (mv->models_for_manufacturer_selector != NULL) g_tree_destroy(mv->models_for_manufacturer_selector);
-    if (mv->models_for_name_selector != NULL) g_tree_destroy(mv->models_for_name_selector);
-    G_OBJECT_CLASS (main_window_parent_class)->finalize(gobject);
+window_main_finalize(GObject *gobject) {
+    WindowMain *wm = EZP_WINDOW_MAIN(gobject);
+    g_free(wm->hex_buffer);
+    if (wm->models_for_manufacturer_selector != NULL) g_tree_destroy(wm->models_for_manufacturer_selector);
+    if (wm->models_for_name_selector != NULL) g_tree_destroy(wm->models_for_name_selector);
+    G_OBJECT_CLASS (window_main_parent_class)->finalize(gobject);
 }
 
 static void
-main_window_class_init(MainWindowClass *klass) {
+window_main_class_init(WindowMainClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = main_window_finalize;
+    object_class->finalize = window_main_finalize;
 
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_q, GDK_CONTROL_MASK, "window.close", NULL);
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/main/main-window.ui");
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, color_scheme_button);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, hex_widget);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, scroll_bar);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, test_button);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, erase_button);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, read_button);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, write_button);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, progress_bar);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, status_icon);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, flash_type_selector);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, flash_manufacturer_selector);
-    gtk_widget_class_bind_template_child(widget_class, MainWindow, flash_name_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, color_scheme_button);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, hex_widget);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, scroll_bar);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, test_button);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, erase_button);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, read_button);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, write_button);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, progress_bar);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, status_icon);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_type_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_manufacturer_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_name_selector);
 
     gtk_widget_class_bind_template_callback(widget_class, get_color_scheme_icon_name);
     gtk_widget_class_bind_template_callback(widget_class, color_scheme_button_clicked_cb);
 }
 
 static void
-main_window_init(MainWindow *self) {
+window_main_init(WindowMain *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     gtk_widget_init_template(GTK_WIDGET (self));
@@ -463,13 +463,13 @@ main_window_init(MainWindow *self) {
     g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK (scroll_bar_value_changed_cb), self,
                             G_CONNECT_DEFAULT);
 
-    g_signal_connect_object(self->test_button, "clicked", G_CALLBACK (main_window_button_clicked_cb), self,
+    g_signal_connect_object(self->test_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->erase_button, "clicked", G_CALLBACK (main_window_button_clicked_cb), self,
+    g_signal_connect_object(self->erase_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->read_button, "clicked", G_CALLBACK (main_window_button_clicked_cb), self,
+    g_signal_connect_object(self->read_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->write_button, "clicked", G_CALLBACK (main_window_button_clicked_cb), self,
+    g_signal_connect_object(self->write_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
 
     gtk_progress_bar_set_fraction(self->progress_bar, 0.2);
@@ -486,17 +486,14 @@ main_window_init(MainWindow *self) {
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
 }
 
-MainWindow *
-main_window_new(GtkApplication *application, ChipsDataRepository *repo) {
-    MainWindow *mv = g_object_new(MAIN_TYPE_MAIN_WINDOW, "application", application, NULL);
-    main_window_set_repo(mv, repo);
-    return mv;
-}
+WindowMain *
+window_main_new(GtkApplication *application, ChipsDataRepository *repo) {
+    WindowMain *wm = g_object_new(EZP_TYPE_WINDOW_MAIN, "application", application, NULL);
 
-void
-main_window_set_repo(MainWindow *self, ChipsDataRepository *repo) {
-    self->repo = repo;
-    g_signal_connect_object(self->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), self, G_CONNECT_DEFAULT);
+    wm->repo = repo;
+    g_signal_connect_object(wm->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), wm, G_CONNECT_DEFAULT);
     chips_list list = chips_data_repository_get_chips(repo);
-    chips_list_changed_cb(NULL, &list, self);
+    chips_list_changed_cb(NULL, &list, wm);
+
+    return wm;
 }

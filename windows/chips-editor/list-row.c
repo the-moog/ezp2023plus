@@ -43,7 +43,7 @@ static GParamSpec *props[LAST_PROP];
 
 static void
 chips_editor_list_row_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec) {
-    ChipsEditorListRow *self = CHIPS_EDITOR_LIST_ROW(object);
+    ChipsEditorListRow *self = EZP_CHIPS_EDITOR_LIST_ROW(object);
     char sprintf_buffer[20];
     switch (prop_id) {
         case PROP_FLASH_TYPE:
@@ -143,7 +143,7 @@ chips_editor_list_row_init(ChipsEditorListRow *self) {
 
 ChipsEditorListRow *
 chips_editor_list_row_new(const ezp_chip_data *data) {
-    ChipsEditorListRow *self = g_object_new(CHIPS_EDITOR_TYPE_LIST_ROW, NULL);
+    ChipsEditorListRow *self = g_object_new(EZP_TYPE_CHIPS_EDITOR_LIST_ROW, NULL);
 
     char name_copy[48];
     strlcpy(name_copy, data->name, 48);

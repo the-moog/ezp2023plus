@@ -5,12 +5,11 @@
 
 G_BEGIN_DECLS
 
-#define MAIN_TYPE_MAIN_WINDOW (main_window_get_type())
+#define EZP_TYPE_WINDOW_MAIN (window_main_get_type())
 
-G_DECLARE_FINAL_TYPE (MainWindow, main_window, MAIN, MAIN_WINDOW, AdwApplicationWindow)
+G_DECLARE_FINAL_TYPE (WindowMain, window_main, EZP, WINDOW_MAIN, AdwApplicationWindow)
 
-MainWindow *main_window_new(GtkApplication *application, ChipsDataRepository *repo);
-
-void main_window_set_repo(MainWindow *self, ChipsDataRepository *repo);
+WindowMain *
+window_main_new(GtkApplication *application, ChipsDataRepository *repo);
 
 G_END_DECLS

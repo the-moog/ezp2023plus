@@ -19,7 +19,7 @@ G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 
 static void
 window_chips_editor_dispose(GObject *gobject) {
-    WindowChipsEditor *win = ADW_WINDOW_CHIPS_EDITOR(gobject);
+    WindowChipsEditor *win = EZP_WINDOW_CHIPS_EDITOR(gobject);
 
     G_OBJECT_CLASS (window_chips_editor_parent_class)->dispose (gobject);
 }
@@ -49,7 +49,7 @@ selection_changed_cb(GtkSingleSelection *selection_model, guint start_position, 
 static void
 search_text_changed_cb(GtkEditable *editable, gpointer data) {
     printf("search query: %s\n", gtk_editable_get_text(editable));
-    WindowChipsEditor *self = ADW_WINDOW_CHIPS_EDITOR(data);
+    WindowChipsEditor *self = EZP_WINDOW_CHIPS_EDITOR(data);
     gtk_string_filter_set_search(self->filter, gtk_editable_get_text(editable));
 }
 
@@ -73,9 +73,9 @@ static void
 window_chips_editor_init(WindowChipsEditor *self) {
     gtk_widget_init_template(GTK_WIDGET (self));
 
-    self->store = g_list_store_new(CHIPS_EDITOR_TYPE_LIST_ROW);
+    self->store = g_list_store_new(EZP_TYPE_CHIPS_EDITOR_LIST_ROW);
 
-    GtkExpression *exp = gtk_property_expression_new(CHIPS_EDITOR_TYPE_LIST_ROW, NULL, "name");
+    GtkExpression *exp = gtk_property_expression_new(EZP_TYPE_CHIPS_EDITOR_LIST_ROW, NULL, "name");
     self->filter = gtk_string_filter_new(exp);
     gtk_string_filter_set_ignore_case(self->filter, TRUE);
     GtkFilterListModel *filterModel = gtk_filter_list_model_new(G_LIST_MODEL(self->store), GTK_FILTER(self->filter));
@@ -92,7 +92,7 @@ window_chips_editor_init(WindowChipsEditor *self) {
 
 WindowChipsEditor *
 window_chips_editor_new(ChipsDataRepository *repo) {
-    WindowChipsEditor *win = g_object_new(ADW_TYPE_WINDOW_CHIPS_EDITOR, NULL);
+    WindowChipsEditor *win = g_object_new(EZP_TYPE_WINDOW_CHIPS_EDITOR, NULL);
 
     win->repo = repo;
     g_signal_connect_object(win->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), win, G_CONNECT_DEFAULT);

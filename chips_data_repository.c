@@ -37,13 +37,13 @@ chips_data_repository_class_init(ChipsDataRepositoryClass *klass) {
 
 static void
 chips_data_repository_init(ChipsDataRepository *self) {
-    signals[CHIPS_LIST] = signal_new("chips-list", DATA_TYPE_CHIPS_DATA_REPOSITORY, G_SIGNAL_RUN_LAST, NULL,
+    signals[CHIPS_LIST] = signal_new("chips-list", EZP_TYPE_CHIPS_DATA_REPOSITORY, G_SIGNAL_RUN_LAST, NULL,
                                      NULL, NULL, NULL, G_TYPE_NONE, 1, G_TYPE_POINTER);
 }
 
 ChipsDataRepository *
 chips_data_repository_new(const char *file_path) {
-    ChipsDataRepository *obj = g_object_new(DATA_TYPE_CHIPS_DATA_REPOSITORY, NULL);
+    ChipsDataRepository *obj = g_object_new(EZP_TYPE_CHIPS_DATA_REPOSITORY, NULL);
     obj->file_path = file_path;
     obj->chips = NULL;
     obj->chips_count = 0;

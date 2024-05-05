@@ -46,7 +46,7 @@ show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
 
 static void
 show_main_window(GtkApplication *app) {
-    MainWindow *window = main_window_new(app, repo);
+    WindowMain *window = window_main_new(app, repo);
     gtk_window_present(GTK_WINDOW (window));
 }
 
