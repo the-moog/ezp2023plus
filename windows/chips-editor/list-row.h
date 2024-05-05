@@ -9,7 +9,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChipsEditorListRow, chips_editor_list_row, CHIPS_EDITOR, LIST_ROW, GObject)
 
-ChipsEditorListRow *chips_editor_list_row_new(ezp_chip_data *data);
+ChipsEditorListRow *chips_editor_list_row_new(const ezp_chip_data *data);
 
 void chips_editor_list_row_set_flash_type(ChipsEditorListRow *self, const char *flash_type);
 

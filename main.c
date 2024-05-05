@@ -15,7 +15,7 @@ show_inspector(GSimpleAction *action, GVariant *state, gpointer user_data) {
 
 static void
 show_chips_editor(GSimpleAction *action, GVariant *state, gpointer user_data) {
-    WindowChipsEditor *chips_editor = window_chips_editor_new();
+    WindowChipsEditor *chips_editor = window_chips_editor_new(repo);
     gtk_window_present(GTK_WINDOW(chips_editor));
 }
 

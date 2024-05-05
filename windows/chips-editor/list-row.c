@@ -142,13 +142,15 @@ chips_editor_list_row_init(ChipsEditorListRow *self) {
 }
 
 ChipsEditorListRow *
-chips_editor_list_row_new(ezp_chip_data *data) {
+chips_editor_list_row_new(const ezp_chip_data *data) {
     ChipsEditorListRow *self = g_object_new(CHIPS_EDITOR_TYPE_LIST_ROW, NULL);
 
+    char name_copy[48];
+    strlcpy(name_copy, data->name, 48);
     char *clazz;
     char *manufacturer;
     char *chip_name;
-    if (parseName(data->name, &clazz, &manufacturer, &chip_name) == 0) {
+    if (parseName(name_copy, &clazz, &manufacturer, &chip_name) == 0) {
         chips_editor_list_row_set_flash_type(self, clazz);
         chips_editor_list_row_set_manufacturer(self, manufacturer);
         chips_editor_list_row_set_name(self, chip_name);

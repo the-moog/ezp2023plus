@@ -1,6 +1,7 @@
 #pragma once
 
 #include <adwaita.h>
+#include "chips_data_repository.h"
 
 G_BEGIN_DECLS
 
@@ -8,6 +9,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW, WINDOW_CHIPS_EDITOR, AdwWindow)
 
-WindowChipsEditor *window_chips_editor_new(void);
+WindowChipsEditor *window_chips_editor_new(ChipsDataRepository *repo);
 
 G_END_DECLS

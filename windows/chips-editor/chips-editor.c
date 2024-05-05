@@ -11,13 +11,24 @@ struct _WindowChipsEditor {
     GtkSearchBar *chips_searchbar;
     GtkSearchEntry *chips_searchentry;
     GtkStringFilter *filter;
+    GListStore *store;
+    ChipsDataRepository *repo;
 };
 
 G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 
 static void
+window_chips_editor_dispose(GObject *gobject) {
+    WindowChipsEditor *win = ADW_WINDOW_CHIPS_EDITOR(gobject);
+
+    G_OBJECT_CLASS (window_chips_editor_parent_class)->dispose (gobject);
+}
+
+static void
 window_chips_editor_class_init(WindowChipsEditorClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->dispose = window_chips_editor_dispose;
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chips-editor.ui");
@@ -43,36 +54,50 @@ search_text_changed_cb(GtkEditable *editable, gpointer data) {
 }
 
 static void
+chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user_data) {
+    WindowChipsEditor *self = user_data;
+
+    g_list_store_remove_all(self->store);
+    if (list->length > 0) {
+        for (int i = 0; i < list->length; ++i) {
+            ChipsEditorListRow *row = chips_editor_list_row_new(&list->data[i]);
+            g_list_store_append(self->store, row);
+            g_object_unref(row);
+        }
+    } else {
+        g_warning("list length is %d\n", list->length);
+    }
+}
+
+static void
 window_chips_editor_init(WindowChipsEditor *self) {
     gtk_widget_init_template(GTK_WIDGET (self));
 
-    GListStore *store = g_list_store_new(CHIPS_EDITOR_TYPE_LIST_ROW);
-    ezp_chip_data *chips;
-    int ret = ezp_chips_data_read(&chips, "/home/alexandro45/programs/EZP2023+ ver3.0/EZP2023+.Dat");
-    if (ret > 0) {
-        for (int i = 0; i < ret; ++i) {
-            g_list_store_append(store, chips_editor_list_row_new(&chips[i]));
-        }
-    } else {
-        printf("ret is %d\n", ret);
-    }
-    free(chips);
+    self->store = g_list_store_new(CHIPS_EDITOR_TYPE_LIST_ROW);
 
     GtkExpression *exp = gtk_property_expression_new(CHIPS_EDITOR_TYPE_LIST_ROW, NULL, "name");
     self->filter = gtk_string_filter_new(exp);
     gtk_string_filter_set_ignore_case(self->filter, TRUE);
-    GtkFilterListModel *filterModel = gtk_filter_list_model_new(G_LIST_MODEL(store), GTK_FILTER(self->filter));
+    GtkFilterListModel *filterModel = gtk_filter_list_model_new(G_LIST_MODEL(self->store), GTK_FILTER(self->filter));
 
     GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(filterModel));
     g_signal_connect(selection, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
 
     gtk_column_view_set_model(self->chips_list, GTK_SELECTION_MODEL(selection));
+    g_object_unref(selection);
 
     gtk_search_bar_set_key_capture_widget(self->chips_searchbar, GTK_WIDGET (self));
     g_signal_connect (self->chips_searchentry, "changed", G_CALLBACK(search_text_changed_cb), self);
 }
 
 WindowChipsEditor *
-window_chips_editor_new(void) {
-    return g_object_new(ADW_TYPE_WINDOW_CHIPS_EDITOR, NULL);
+window_chips_editor_new(ChipsDataRepository *repo) {
+    WindowChipsEditor *win = g_object_new(ADW_TYPE_WINDOW_CHIPS_EDITOR, NULL);
+
+    win->repo = repo;
+    g_signal_connect_object(win->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), win, G_CONNECT_DEFAULT);
+    chips_list list = chips_data_repository_get_chips(repo);
+    chips_list_changed_cb(NULL, &list, win);
+
+    return win;
 }
