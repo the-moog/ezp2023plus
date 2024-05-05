@@ -4,6 +4,9 @@
 
 #include "windows/chips-editor/chips-editor.h"
 #include "windows/main/main-window.h"
+#include "chips_data_repository.h"
+
+ChipsDataRepository *repo;
 
 static void
 show_inspector(GSimpleAction *action, GVariant *state, gpointer user_data) {
@@ -43,12 +46,15 @@ show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
 
 static void
 show_main_window(GtkApplication *app) {
-    MainWindow *window = main_window_new(app);
+    MainWindow *window = main_window_new(app, repo);
     gtk_window_present(GTK_WINDOW (window));
 }
 
 int
 main(int argc, char **argv) {
+    repo = chips_data_repository_new("/home/alexandro45/programs/EZP2023+ ver3.0/EZP2023+.Dat");
+    chips_data_repository_read(repo);
+
     AdwApplication *app;
     int status;
     static GActionEntry app_entries[] = {

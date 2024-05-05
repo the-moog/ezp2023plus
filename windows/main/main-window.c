@@ -484,13 +484,17 @@ main_window_init(MainWindow *self) {
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_name_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
-
-    self->repo = chips_data_repository_new("/home/alexandro45/programs/EZP2023+ ver3.0/EZP2023+.Dat");
-    g_signal_connect_object(self->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), self, G_CONNECT_DEFAULT);
-    chips_data_repository_read(self->repo);
 }
 
 MainWindow *
-main_window_new(GtkApplication *application) {
-    return g_object_new(MAIN_TYPE_MAIN_WINDOW, "application", application, NULL);
+main_window_new(GtkApplication *application, ChipsDataRepository *repo) {
+    MainWindow *mv = g_object_new(MAIN_TYPE_MAIN_WINDOW, "application", application, NULL);
+    main_window_set_repo(mv, repo);
+    return mv;
+}
+
+void
+main_window_set_repo(MainWindow *self, ChipsDataRepository *repo) {
+    self->repo = repo;
+    g_signal_connect_object(self->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), self, G_CONNECT_DEFAULT);
 }
