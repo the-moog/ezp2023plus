@@ -497,4 +497,6 @@ void
 main_window_set_repo(MainWindow *self, ChipsDataRepository *repo) {
     self->repo = repo;
     g_signal_connect_object(self->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), self, G_CONNECT_DEFAULT);
+    chips_list list = chips_data_repository_get_chips(repo);
+    chips_list_changed_cb(NULL, &list, self);
 }

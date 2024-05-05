@@ -33,6 +33,13 @@ int chips_data_repository_save(ChipsDataRepository *self);
 /**
  *
  * @param self
+ * @return chips_list
+ */
+chips_list chips_data_repository_get_chips(ChipsDataRepository *self);
+
+/**
+ *
+ * @param self
  * @param data new item
  * @return 0 if success or -1 if unable to realloc
  */
