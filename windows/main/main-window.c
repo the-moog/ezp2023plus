@@ -246,11 +246,12 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     ezp_chip_data *chips = data->data;
     MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
 
+    // STEP 1 - compute dropdown items
     // at first, we need to get list of types
     // then list of manufacturers for each type
     // then list of names for each manufacturer
     //
-    // A GtkStringList is needed to display data in a GtkDropDown, but it
+    // A GtkStringList is needed to dringList andisplay data in a GtkDropDown, but it
     // has not any "find_*" methods which we need to insert a new items
     // without duplicates. So, at first we need to use a GList, then
     // copy items to GtkStringList and delete(free) GList.
@@ -328,14 +329,19 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
     g_list_foreach(types, append_string_to_string_list, types_model);
     destroy_strings_g_list(types);
 
-    // find prev type item
+    // STEP 2 - try to select previously selected items
+    // find positions of previously selected items
+    // set models for dropdowns
+    // set selected items by its position
+
+    // find position of previously selected type item
     int t_pos = gtk_string_list_index_of(types_model, mv->selected_chip_type);
 
-    // find prev manuf item
+    // find model for dropdown and position of previously selected manuf item
     GtkStringList *manufs_model = g_tree_lookup(mv->models_for_manufacturer_selector, mv->selected_chip_type);
     int m_pos = manufs_model ? gtk_string_list_index_of(manufs_model, mv->selected_chip_manuf) : -1;
 
-    // find prev name item
+    // find model for dropdown and position of previously selected name item
     char key[48];
     strlcpy(key, mv->selected_chip_type, 48);
     strlcat(key, ",", 48);
@@ -357,6 +363,8 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
 
 static void
 dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpointer user_data) {
+    // warning: dropdown_selected_item_changed_cb is called multiple times during filling dropdowns with data, so we
+    // should not use this callback to do any actions. we just save selected strings and then use them when user clicks on the button
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
     MainWindow *mv = MAIN_MAIN_WINDOW(user_data);
 
