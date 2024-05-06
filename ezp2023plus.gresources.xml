@@ -9,7 +9,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/status/status-ok.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/status/status-error.svg</file>
     <file compressed="true">style.css</file>
-    <file compressed="true">style-dark.css</file>
   </gresource>
   <gresource prefix="/dev/alexandro45/ezp2023plus/ui">
     <file preprocess="xml-stripblanks">windows/chips-editor/chips-editor.ui</file>

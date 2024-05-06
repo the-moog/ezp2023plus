@@ -32,14 +32,8 @@ show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
 
     about = adw_about_dialog_new_from_appdata("/dev/alexandro45/ezp2023plus/dev.alexandro45.ezp2023plus.metainfo.xml",
                                               NULL);
-    adw_about_dialog_set_version(ADW_ABOUT_DIALOG(about), ADW_VERSION_S);
-    adw_about_dialog_set_debug_info_filename(ADW_ABOUT_DIALOG(about), "adwaita-1-demo-debug-info.txt");
-    adw_about_dialog_set_copyright(ADW_ABOUT_DIALOG(about), "© 2017–2022 Purism SPC");
+    adw_about_dialog_set_copyright(ADW_ABOUT_DIALOG(about), "© 2024 Alexandro45");
     adw_about_dialog_set_developers(ADW_ABOUT_DIALOG(about), developers);
-
-    adw_about_dialog_add_link(ADW_ABOUT_DIALOG(about),
-                              _("_Documentation"),
-                              "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/");
 
     adw_dialog_present(about, GTK_WIDGET (window));
 }

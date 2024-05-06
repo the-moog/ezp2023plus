@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=EZP2023+
-Exec=ezp2023plus
+Exec=appezp2023plus
 Icon=dev.alexandro45.ezp2023plus
 Keywords=ezp;ezp2023;
 Terminal=false

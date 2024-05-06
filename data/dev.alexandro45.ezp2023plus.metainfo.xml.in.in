@@ -1,53 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>dev.alexandro45.ezp2023plus</id>
-  <metadata_license>CC0-1.0</metadata_license>
-  <project_license>LGPL-2.1-or-later</project_license>
-  <launchable type="desktop-id">dev.alexandro45.ezp2023plus.desktop</launchable>
-  <developer id="dev.alexandro45">
-    <name>Alexandro45</name>
-  </developer>
-
-  <name>EZP2023+</name>
-  <summary>Software for EZP2023+ programmer</summary>
-
-  <description>
-    <p>
-      Some description
-    </p>
-  </description>
-
-  <screenshots>
-    <screenshot type="default">
-      <image>https://gitlab.gnome.org/GNOME/libadwaita/-/raw/main/demo/data/screenshots/screenshot.png</image>
-      <caption>The main window</caption>
-    </screenshot>
-  </screenshots>
-
-  <releases>
-    <release version="@BUILD_VERSION@" date="@BUILD_DATE@">
-      <description>
-        <p>A new build of libadwaita.</p>
-      </description>
-    </release>
-  </releases>
-
-  <project_group>EZP2023plus</project_group>
-
-<!--  <url type="homepage">https://gitlab.gnome.org/GNOME/libadwaita</url>-->
-<!--  <url type="bugtracker">https://gitlab.gnome.org/GNOME/libadwaita/issues</url>-->
-<!--  <url type="donation">https://www.gnome.org/friends/</url>-->
-
-  <content_rating type="oars-1.1" />
-  <translation type="gettext">libadwaita</translation>
-
-  <recommends>
-    <control>pointing</control>
-    <control>keyboard</control>
-    <control>touch</control>
-  </recommends>
-
-  <requires>
-    <display_length compare="ge">360</display_length>
-  </requires>
+    <id>dev.alexandro45.ezp2023plus</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-2.0-or-later</project_license>
+    <name>EZP2023+</name>
+    <summary>Software for EZP2023+ programmer</summary>
+    <description>
+        <p>EZP2023+ is a programmer for 24/25/93/95 flash chips.</p>
+        <p>This program allows you read/write flash chips using EZP2023+ programmer.</p>
+    </description>
+    <launchable type="desktop-id">dev.alexandro45.ezp2023plus.desktop</launchable>
+    <screenshots>
+        <screenshot type="default">
+            <image>https://raw.githubusercontent.com/alexandro-45/ezp2023plus/master/data/screenshots/screenshot.png</image>
+            <caption>The main window</caption>
+        </screenshot>
+    </screenshots>
+    <url type="homepage">https://github.com/alexandro-45/ezp2023plus</url>
+    <url type="bugtracker">https://github.com/alexandro-45/ezp2023plus/issues</url>
+    <project_group>EZP2023plus</project_group>
+    <developer id="dev.alexandro45">
+        <name>Alexandro45</name>
+    </developer>
+    <releases>
+        <release version="@BUILD_VERSION@" date="@BUILD_DATE@" type="development">
+            <description>
+                <p>Development build</p>
+            </description>
+        </release>
+    </releases>
+    <content_rating type="oars-1.0"/>
+    <translation type="gettext">appezp2023plus</translation>
+    <recommends>
+        <control>pointing</control>
+        <control>keyboard</control>
+        <control>touch</control>
+    </recommends>
+    <requires>
+        <display_length compare="ge">360</display_length>
+    </requires>
 </component>

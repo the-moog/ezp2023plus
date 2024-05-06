@@ -1,2 +1,4 @@
+Work in progress
+
 # TODO list
-- completely delete AdwDemo components
+- translations
