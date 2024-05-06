@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/dev/alexandro45/ezp2023plus">
-    <file preprocess="xml-stripblanks" alias="icons/scalable/apps/org.gnome.Adwaita1.Demo.svg">data/org.gnome.Adwaita1.Demo.svg</file>
-    <file preprocess="xml-stripblanks" alias="icons/symbolic/apps/org.gnome.Adwaita1.Demo-symbolic.svg">data/org.gnome.Adwaita1.Demo-symbolic.svg</file>
+    <file preprocess="xml-stripblanks" alias="icons/scalable/apps/dev.alexandro45.ezp2023plus.svg">data/dev.alexandro45.ezp2023plus.svg</file>
+    <file preprocess="xml-stripblanks" alias="icons/symbolic/apps/dev.alexandro45.ezp2023plus-symbolic.svg">data/dev.alexandro45.ezp2023plus-symbolic.svg</file>
     <file preprocess="xml-stripblanks" alias="dev.alexandro45.ezp2023plus.metainfo.xml">data/dev.alexandro45.ezp2023plus.metainfo.xml</file>
     <file preprocess="xml-stripblanks">icons/scalable/status/dark-mode-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/status/light-mode-symbolic.svg</file>

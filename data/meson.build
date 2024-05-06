@@ -54,11 +54,11 @@ if appstreamcli.found()
 endif
 
 install_data(
-  'org.gnome.Adwaita1.Demo.svg',
+  'dev.alexandro45.ezp2023plus.svg',
   install_dir: datadir / 'icons' / 'hicolor' / 'scalable' / 'apps'
 )
 
 install_data(
-  'org.gnome.Adwaita1.Demo-symbolic.svg',
+  'dev.alexandro45.ezp2023plus-symbolic.svg',
   install_dir: datadir / 'icons' / 'hicolor' / 'symbolic' / 'apps'
 )
