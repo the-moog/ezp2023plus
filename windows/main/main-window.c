@@ -20,6 +20,9 @@ struct _WindowMain {
     GtkDropDown *flash_type_selector;
     GtkDropDown *flash_manufacturer_selector;
     GtkDropDown *flash_name_selector;
+    GtkDropDown *flash_size_selector;
+    GtkSpinButton *delay_selector;
+    GtkSearchEntry *chip_search_entry;
 
     char *hex_buffer;
     int hex_buffer_size;
@@ -428,6 +431,9 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_type_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_manufacturer_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_name_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_size_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, delay_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, chip_search_entry);
 
     gtk_widget_class_bind_template_callback(widget_class, get_color_scheme_icon_name);
     gtk_widget_class_bind_template_callback(widget_class, color_scheme_button_clicked_cb);

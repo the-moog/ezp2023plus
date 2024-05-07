@@ -100,23 +100,23 @@
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkSearchEntry"/>
+                                            <object class="GtkSearchEntry" id="chip_search_entry">
+                                                <property name="name">chip_search_entry</property>
+                                            </object>
                                         </child>
                                         <child>
-                                            <object class="GtkDropDown">
+                                            <object class="GtkDropDown" id="flash_size_selector">
+                                                <property name="name">flash_size_selector</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
-                                                        <items>
-                                                            <item translatable="yes">Factory</item>
-                                                            <item translatable="yes">Home</item>
-                                                            <item translatable="yes">Subway</item>
-                                                        </items>
+
                                                     </object>
                                                 </property>
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkSpinButton">
+                                            <object class="GtkSpinButton" id="delay_selector">
+                                                <property name="name">delay_selector</property>
                                                 <property name="adjustment">
                                                     <object class="GtkAdjustment">
                                                         <property name="lower">0</property>
