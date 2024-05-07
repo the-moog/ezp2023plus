@@ -3,7 +3,7 @@
     <requires lib="gtk" version="4.0"/>
     <requires lib="libadwaita" version="1.0"/>
     <template class="WindowChipsEditor" parent="AdwWindow">
-        <property name="title" translatable="1">Chips editor</property>
+        <property name="title" translatable="yes">Chips editor</property>
         <property name="default-width">575</property>
         <property name="default-height">400</property>
         <property name="destroy-with-parent">1</property>
@@ -56,7 +56,7 @@
                                         <property name="show-row-separators">True</property>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Type</property>
+                                                <property name="title" translatable="yes">Type</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -85,7 +85,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Manufacturer</property>
+                                                <property name="title" translatable="yes">Manufacturer</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -114,7 +114,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Name</property>
+                                                <property name="title" translatable="yes">Name</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -143,7 +143,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Chip ID</property>
+                                                <property name="title" translatable="yes">Chip ID</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -172,7 +172,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Voltage</property>
+                                                <property name="title" translatable="yes">Voltage</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -201,7 +201,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Flash size</property>
+                                                <property name="title" translatable="yes">Flash size</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -230,7 +230,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Flash page</property>
+                                                <property name="title" translatable="yes">Flash page</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -259,7 +259,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Class</property>
+                                                <property name="title" translatable="yes">Class</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -288,7 +288,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Algorithm</property>
+                                                <property name="title" translatable="yes">Algorithm</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -317,7 +317,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Delay</property>
+                                                <property name="title" translatable="yes">Delay</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -346,7 +346,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">EEPROM size</property>
+                                                <property name="title" translatable="yes">EEPROM size</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -375,7 +375,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">EEPROM page</property>
+                                                <property name="title" translatable="yes">EEPROM page</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">
@@ -404,7 +404,7 @@
                                         </child>
                                         <child>
                                             <object class="GtkColumnViewColumn">
-                                                <property name="title">Extend</property>
+                                                <property name="title" translatable="yes">Extend</property>
                                                 <property name="resizable">True</property>
                                                 <property name="fixed-width">100px</property>
                                                 <property name="factory">

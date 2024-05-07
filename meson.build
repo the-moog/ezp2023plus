@@ -20,12 +20,16 @@ gnome = import('gnome')
 # Setup various paths that subdirectory meson.build files need
 package_subdir = get_option('package_subdir') # When used as subproject
 if package_subdir != ''
+    prefix = get_option('prefix') / package_subdir
+    localedir = get_option('localedir') / package_subdir
     datadir = get_option('datadir') / package_subdir
     libdir = get_option('libdir') / package_subdir
     girdir = get_option('datadir') / package_subdir / 'gir-1.0'
     typelibdir = get_option('libdir') / package_subdir / 'girepository-1.0'
     vapidir = get_option('datadir') / package_subdir / 'vapi'
 else
+    prefix = get_option('prefix')
+    localedir = get_option('localedir')
     datadir = get_option('datadir')
     libdir = get_option('libdir')
     girdir = get_option('datadir') / 'gir-1.0'
@@ -33,12 +37,16 @@ else
     vapidir = get_option('datadir') / 'vala' / 'vapi'
 endif
 
+translation_domain = 'appezp2023plus'
+
 subdir('po')
 subdir('data')
 
 app_config_data = configuration_data()
 app_config_data.set_quoted('APP_METAINFO', appstream_file.full_path())
 app_config_data.set_quoted('VCS_TAG', '@VCS_TAG@')
+app_config_data.set_quoted('TRANSLATION_DOMAIN', translation_domain)
+app_config_data.set_quoted('LOCALE_DIR', '@0@'.format(prefix / localedir))
 
 app_config_h = vcs_tag(
     input : configure_file(

@@ -30,7 +30,7 @@
         </release>
     </releases>
     <content_rating type="oars-1.0"/>
-    <translation type="gettext">appezp2023plus</translation>
+    <translation type="gettext">@TRANSLATION_DOMAIN@</translation>
     <recommends>
         <control>pointing</control>
         <control>keyboard</control>

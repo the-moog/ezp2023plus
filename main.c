@@ -1,3 +1,4 @@
+#include "config.h"
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <adwaita.h>
@@ -46,6 +47,10 @@ show_main_window(GtkApplication *app) {
 
 int
 main(int argc, char **argv) {
+    bindtextdomain(TRANSLATION_DOMAIN, LOCALE_DIR);
+    bind_textdomain_codeset(TRANSLATION_DOMAIN, "UTF-8");
+    textdomain(TRANSLATION_DOMAIN);
+
     repo = chips_data_repository_new("/home/alexandro45/programs/EZP2023+ ver3.0/EZP2023+.Dat");
     chips_data_repository_read(repo);
 

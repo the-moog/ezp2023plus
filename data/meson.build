@@ -30,6 +30,7 @@ endif
 appdata_config = configuration_data()
 appdata_config.set('BUILD_VERSION', meson.project_version())
 appdata_config.set('BUILD_DATE', today)
+appdata_config.set('TRANSLATION_DOMAIN', translation_domain)
 
 appstream_file = i18n.merge_file(
     input : configure_file(

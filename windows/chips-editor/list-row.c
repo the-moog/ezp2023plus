@@ -1,5 +1,6 @@
 #include "list-row.h"
 #include <stdio.h>
+#include <glib/gi18n.h>
 #include "utilities.h"
 
 struct _ChipsEditorListRow {
@@ -62,13 +63,13 @@ chips_editor_list_row_get_property(GObject *object, guint prop_id, GValue *value
         case PROP_VOLTAGE:
             switch (self->voltage) {
                 case VOLTAGE_1V8:
-                    strcpy(sprintf_buffer, "1.8v");
+                    strcpy(sprintf_buffer, gettext("1.8v"));
                     break;
                 case VOLTAGE_3V3:
-                    strcpy(sprintf_buffer, "3.3v");
+                    strcpy(sprintf_buffer, gettext("3.3v"));
                     break;
                 case VOLTAGE_5V:
-                    strcpy(sprintf_buffer, "5v");
+                    strcpy(sprintf_buffer, gettext("5v"));
                     break;
             }
             g_value_set_string(value, sprintf_buffer);
@@ -155,7 +156,7 @@ chips_editor_list_row_new(const ezp_chip_data *data) {
         chips_editor_list_row_set_manufacturer(self, manufacturer);
         chips_editor_list_row_set_name(self, chip_name);
     } else {
-        chips_editor_list_row_set_flash_type(self, "parsing error");
+        chips_editor_list_row_set_flash_type(self, gettext("parsing error"));
     }
     self->chip_id = data->chip_id;
     self->flash = data->flash;

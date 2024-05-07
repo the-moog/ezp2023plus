@@ -1,2 +1,5 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+windows/chips-editor/chips-editor.ui
+windows/chips-editor/list-row.c
+windows/main/main-window.ui

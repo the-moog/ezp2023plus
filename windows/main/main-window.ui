@@ -5,7 +5,7 @@
     <menu id="primary_menu">
         <section>
             <item>
-                <attribute name="label" translatable="yes">_Inspector</attribute>
+                <attribute name="label" translatable="no">_Inspector</attribute>
                 <attribute name="action">app.inspector</attribute>
             </item>
         </section>
@@ -21,7 +21,7 @@
         </section>
     </menu>
     <template class="WindowMain" parent="AdwApplicationWindow">
-        <property name="title" translatable="yes">EZP2023+</property>
+        <property name="title" translatable="no">EZP2023+</property>
         <property name="default_width">800</property>
         <property name="default_height">576</property>
         <property name="width-request">360</property>
@@ -138,7 +138,7 @@
                                                             <item translatable="yes">3 MHz</item>
                                                             <item translatable="yes">1.5 MHz</item>
                                                             <item translatable="yes">750 KHz</item>
-                                                            <item translatable="yes">? KHz</item>
+                                                            <item translatable="yes">375 KHz</item>
                                                         </items>
                                                     </object>
                                                 </property>
@@ -151,13 +151,13 @@
                                                 <child>
                                                     <object class="GtkButton" id="test_button">
                                                         <property name="name">test_button</property>
-                                                        <property name="label">Test</property>
+                                                        <property name="label" translatable="yes">Test</property>
                                                     </object>
                                                 </child>
                                                 <child>
                                                     <object class="GtkButton" id="erase_button">
                                                         <property name="name">erase_button</property>
-                                                        <property name="label">Erase</property>
+                                                        <property name="label" translatable="yes">Erase</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -169,13 +169,13 @@
                                                 <child>
                                                     <object class="GtkButton" id="read_button">
                                                         <property name="name">read_button</property>
-                                                        <property name="label">Read</property>
+                                                        <property name="label" translatable="yes">Read</property>
                                                     </object>
                                                 </child>
                                                 <child>
                                                     <object class="GtkButton" id="write_button">
                                                         <property name="name">write_button</property>
-                                                        <property name="label">Write</property>
+                                                        <property name="label" translatable="yes">Write</property>
                                                     </object>
                                                 </child>
                                             </object>
