@@ -4,6 +4,7 @@
 #include "chips_data_repository.h"
 #include "utilities.h"
 #include "gtk_string_list_extension.h"
+#include <ezp_prog.h>
 
 struct _WindowMain {
     AdwApplicationWindow parent_instance;
@@ -191,28 +192,47 @@ window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
 }
 
 static void
-load_chips_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
-    const char *file_path = task_data;
-    ezp_chip_data *data;
-    int count = ezp_chips_data_read(&data, file_path);
-    if (count >= 0) {
-        g_task_return_pointer(task, data, NULL);
-    } else {
-        g_task_return_error(task, g_error_new(g_quark_from_string("quark?"), count, "Error reading chips file: %s\n",
-                                              file_path));
-    }
+status_indicator_ok(gpointer user_data) {
+    printf("status_indicator_ok\n");
+    gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-ok");
 }
 
 static void
-load_chips_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
-    ezp_chip_data *ptr = g_async_result_get_user_data(res);
-    printf("Done: %s\n", res);
+status_indicator_error(gpointer user_data) {
+    printf("status_indicator_error\n");
+    gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-error");
 }
 
-static void load_chips_task_start() {
-    GTask *task = g_task_new(NULL, NULL, load_chips_task_result_cb, NULL);
-    g_task_set_task_data(task, "/home/alexandro45/programs/EZP2023+ ver3.0/EZP2023+.Dat", NULL);
-    g_task_run_in_thread(task, load_chips_task_func);
+static void
+status_access_denied(gpointer user_data) {
+    printf("status_access_denied\n");
+    AdwDialog *dlg = adw_alert_dialog_new(gettext("No access to programmer"), gettext("Did you install udev rules?"));
+    adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+    adw_dialog_present(dlg, GTK_WIDGET(user_data));
+}
+
+static void
+programmer_status_callback(ezp_status status, void *user_data) {
+    if (status == EZP_READY) g_idle_add_once(status_indicator_ok, user_data);
+    else if (status == EZP_CONNECTED) g_idle_add_once(status_access_denied, user_data);
+    else g_idle_add_once(status_indicator_error, user_data);
+}
+
+static void
+programmer_status_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+    ezp_listen_programmer_status(programmer_status_callback, task_data);
+    g_task_return_pointer(task, NULL, NULL);
+}
+
+static void
+programmer_status_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+    printf("Programmer status task has been stopped\n");
+}
+
+static void programmer_status_task_start(WindowMain *self) {
+    GTask *task = g_task_new(NULL, NULL, programmer_status_task_result_cb, NULL);
+    g_task_set_task_data(task, self, NULL);
+    g_task_run_in_thread(task, programmer_status_task_func);
     g_object_unref(task);
 }
 
@@ -490,6 +510,7 @@ window_main_init(WindowMain *self) {
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_name_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
+    programmer_status_task_start(self);
 }
 
 WindowMain *

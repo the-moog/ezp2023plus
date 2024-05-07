@@ -2,6 +2,7 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <adwaita.h>
+#include <ezp_prog.h>
 
 #include "windows/chips-editor/chips-editor.h"
 #include "windows/main/main-window.h"
@@ -47,6 +48,11 @@ show_main_window(GtkApplication *app) {
 
 int
 main(int argc, char **argv) {
+    int status = ezp_init();
+    if (status) {
+        printf("ezp_init failed\n");
+        return status;
+    }
     bindtextdomain(TRANSLATION_DOMAIN, LOCALE_DIR);
     bind_textdomain_codeset(TRANSLATION_DOMAIN, "UTF-8");
     textdomain(TRANSLATION_DOMAIN);
@@ -55,7 +61,6 @@ main(int argc, char **argv) {
     chips_data_repository_read(repo);
 
     AdwApplication *app;
-    int status;
     static GActionEntry app_entries[] = {
             {"inspector",    show_inspector,    NULL, NULL, NULL},
             {"chips_editor", show_chips_editor, NULL, NULL, NULL},
@@ -68,7 +73,9 @@ main(int argc, char **argv) {
                                     app);
     g_signal_connect (app, "activate", G_CALLBACK(show_main_window), NULL);
     status = g_application_run(G_APPLICATION (app), argc, argv);
+
     g_object_unref(app);
+    ezp_free();
 
     return status;
 }
