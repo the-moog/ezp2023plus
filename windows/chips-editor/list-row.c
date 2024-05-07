@@ -71,6 +71,8 @@ chips_editor_list_row_get_property(GObject *object, guint prop_id, GValue *value
                 case VOLTAGE_5V:
                     strcpy(sprintf_buffer, gettext("5v"));
                     break;
+                default:
+                    snprintf(sprintf_buffer, 20, gettext("invalid value 0x%x"), self->voltage);
             }
             g_value_set_string(value, sprintf_buffer);
             break;
