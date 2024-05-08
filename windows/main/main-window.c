@@ -39,6 +39,7 @@ struct _WindowMain {
     char selected_chip_name[48];
 
     ChipsDataRepository *repo;
+    ezp_programmer *programmer;
 };
 
 G_DEFINE_FINAL_TYPE (WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
@@ -194,18 +195,32 @@ window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
 static void
 status_indicator_ok(gpointer user_data) {
     printf("status_indicator_ok\n");
-    gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-ok");
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    if (!wm->programmer) {
+        wm->programmer = ezp_find_programmer();
+        if (wm->programmer) {
+            gtk_button_set_icon_name(wm->status_icon, "status-ok");
+        } else {
+            g_warning("status_indicator_ok called, but ezp_find_programmer returned NULL");
+        }
+    }
 }
 
 static void
 status_indicator_error(gpointer user_data) {
     printf("status_indicator_error\n");
-    gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-error");
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    if (wm->programmer) {
+        ezp_free_programmer(wm->programmer);
+        wm->programmer = NULL;
+        gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-error");
+    }
 }
 
 static void
 status_access_denied(gpointer user_data) {
     printf("status_access_denied\n");
+    status_indicator_error(user_data);
     AdwDialog *dlg = adw_alert_dialog_new(gettext("No access to programmer"), gettext("Did you install udev rules?"));
     adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
     adw_dialog_present(dlg, GTK_WIDGET(user_data));
@@ -424,6 +439,7 @@ static void
 window_main_finalize(GObject *gobject) {
     WindowMain *wm = EZP_WINDOW_MAIN(gobject);
     g_free(wm->hex_buffer);
+    if (wm->programmer) ezp_free_programmer(wm->programmer);
     if (wm->models_for_manufacturer_selector != NULL) g_tree_destroy(wm->models_for_manufacturer_selector);
     if (wm->models_for_name_selector != NULL) g_tree_destroy(wm->models_for_name_selector);
     G_OBJECT_CLASS (window_main_parent_class)->finalize(gobject);
@@ -502,14 +518,14 @@ window_main_init(WindowMain *self) {
     gtk_progress_bar_set_text(self->progress_bar, "Reading...");
     gtk_progress_bar_set_show_text(self->progress_bar, TRUE);
 
-    gtk_button_set_icon_name(self->status_icon, "status-error");
-
     g_signal_connect_object(self->flash_type_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_manufacturer_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_name_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
+    self->programmer = ezp_find_programmer();
+    gtk_button_set_icon_name(self->status_icon, self->programmer ? "status-ok" : "status-error");
     programmer_status_task_start(self);
 }
 
