@@ -5,6 +5,7 @@
 #include "utilities.h"
 #include "gtk_string_list_extension.h"
 #include <ezp_prog.h>
+#include <ezp_errors.h>
 
 struct _WindowMain {
     AdwApplicationWindow parent_instance;
@@ -176,11 +177,75 @@ scroll_bar_value_changed_cb(GtkAdjustment *adjustment, gpointer user_data) {
 }
 
 static void
+chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+    WindowMain *wm = EZP_WINDOW_MAIN(source_object);
+    ezp_flash type;
+    uint32_t chip_id;
+    int res = ezp_test_flash(wm->programmer, &type, &chip_id);
+    char *message;
+    switch (res) {
+        case EZP_OK:
+            switch (type) {
+                case SPI_FLASH:
+                    message = g_strdup_printf(gettext("Flash type is SPI_FLASH, Chip ID: 0x%x"), chip_id);
+                    break;
+                case EEPROM_24:
+                    message = g_strdup_printf(gettext("Flash type is EEPROM_24"));
+                    break;
+                case EEPROM_93:
+                    message = g_strdup_printf(gettext("Flash type is EEPROM_93"));
+                    break;
+                case EEPROM_25:
+                    message = g_strdup_printf(gettext("Flash type is EEPROM_25"));
+                    break;
+                case EEPROM_95:
+                    message = g_strdup_printf(gettext("Flash type is EEPROM_95"));
+                    break;
+            }
+            break;
+        case EZP_FLASH_NOT_DETECTED:
+            message = g_strdup_printf("Flash not detected");
+            break;
+        case EZP_INVALID_DATA_FROM_PROGRAMMER:
+            message = g_strdup_printf(gettext("Invalid data from programmer"));
+            break;
+        case EZP_LIBUSB_ERROR:
+            message = g_strdup_printf(gettext("libusb error"));
+            break;
+        default:
+            message = g_strdup_printf(gettext("Unknown error: %d"), res);
+            break;
+    }
+    g_task_return_pointer(task, message, NULL);
+    g_object_unref(task);
+}
+
+static void
+chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+    GError *error;
+    char *message = g_task_propagate_pointer(G_TASK(res), &error);
+
+    AdwDialog *dlg = adw_alert_dialog_new(gettext("Test result"), message ? message : error->message);
+    adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+    adw_dialog_present(dlg, GTK_WIDGET(source_object));
+
+    if (message) free(message);
+    if (error) g_error_free(error);
+}
+
+static void chip_test_task_start(WindowMain *self) {
+    GTask *task = g_task_new(self, NULL, chip_test_task_result_cb, NULL);
+    g_task_set_task_data(task, NULL, NULL);
+    g_task_run_in_thread(task, chip_test_task_func);
+}
+
+static void
 window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
 
     if (!strcmp(name, "test_button")) {
         printf("Test button clicked!\n");
+        chip_test_task_start(user_data);
     } else if (!strcmp(name, "erase_button")) {
         printf("Erase button clicked!\n");
     } else if (!strcmp(name, "read_button")) {
