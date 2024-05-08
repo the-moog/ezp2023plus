@@ -177,6 +177,14 @@ scroll_bar_value_changed_cb(GtkAdjustment *adjustment, gpointer user_data) {
 }
 
 static void
+window_main_set_buttons_sensitive(WindowMain *self, gboolean sensitive) {
+    gtk_widget_set_sensitive(GTK_WIDGET(self->test_button), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->erase_button), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->read_button), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->write_button), sensitive);
+}
+
+static void
 chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
     ezp_flash type;
@@ -228,12 +236,14 @@ chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer use
     AdwDialog *dlg = adw_alert_dialog_new(gettext("Test result"), message ? message : error->message);
     adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
     adw_dialog_present(dlg, GTK_WIDGET(source_object));
+    window_main_set_buttons_sensitive(EZP_WINDOW_MAIN(source_object), true);
 
     if (message) free(message);
     if (error) g_error_free(error);
 }
 
 static void chip_test_task_start(WindowMain *self) {
+    window_main_set_buttons_sensitive(self, false);
     GTask *task = g_task_new(self, NULL, chip_test_task_result_cb, NULL);
     g_task_set_task_data(task, NULL, NULL);
     g_task_run_in_thread(task, chip_test_task_func);
@@ -265,6 +275,7 @@ status_indicator_ok(gpointer user_data) {
         wm->programmer = ezp_find_programmer();
         if (wm->programmer) {
             gtk_button_set_icon_name(wm->status_icon, "status-ok");
+            window_main_set_buttons_sensitive(wm, true);
         } else {
             g_warning("status_indicator_ok called, but ezp_find_programmer returned NULL");
         }
@@ -279,6 +290,7 @@ status_indicator_error(gpointer user_data) {
         ezp_free_programmer(wm->programmer);
         wm->programmer = NULL;
         gtk_button_set_icon_name(EZP_WINDOW_MAIN(user_data)->status_icon, "status-error");
+        window_main_set_buttons_sensitive(wm, false);
     }
 }
 
@@ -590,6 +602,9 @@ window_main_init(WindowMain *self) {
     g_signal_connect_object(self->flash_name_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     self->programmer = ezp_find_programmer();
+    if (!self->programmer) {
+        window_main_set_buttons_sensitive(self, false);
+    }
     gtk_button_set_icon_name(self->status_icon, self->programmer ? "status-ok" : "status-error");
     programmer_status_task_start(self);
 }
