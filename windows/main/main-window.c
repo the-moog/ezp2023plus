@@ -44,13 +44,13 @@ struct _WindowMain {
     ezp_programmer *programmer;
 };
 
-G_DEFINE_FINAL_TYPE (WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
+G_DEFINE_FINAL_TYPE(WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
 
 static GQuark domain_gquark;
 
 static char *
 get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
-    return g_strdup (dark ? "light-mode-symbolic" : "dark-mode-symbolic");
+    return g_strdup(dark ? "light-mode-symbolic" : "dark-mode-symbolic");
 }
 
 static void
@@ -88,7 +88,7 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
     GdkRGBA color;
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
-    gtk_widget_get_color(GTK_WIDGET (area), &color);
+    gtk_widget_get_color(GTK_WIDGET(area), &color);
     gdk_cairo_set_source_rgba(cr, &color);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, FONT_SIZE);
@@ -647,7 +647,7 @@ window_main_finalize(GObject *gobject) {
     if (wm->programmer) ezp_free_programmer(wm->programmer);
     if (wm->models_for_manufacturer_selector != NULL) g_tree_destroy(wm->models_for_manufacturer_selector);
     if (wm->models_for_name_selector != NULL) g_tree_destroy(wm->models_for_name_selector);
-    G_OBJECT_CLASS (window_main_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(window_main_parent_class)->finalize(gobject);
 }
 
 static void
@@ -686,11 +686,11 @@ window_main_init(WindowMain *self) {
     domain_gquark = g_quark_from_static_string("WindowMain");
     AdwStyleManager *manager = adw_style_manager_get_default();
 
-    gtk_widget_init_template(GTK_WIDGET (self));
+    gtk_widget_init_template(GTK_WIDGET(self));
 
     g_signal_connect_object(manager,
                             "notify::system-supports-color-schemes",
-                            G_CALLBACK (notify_system_supports_color_schemes_cb),
+                            G_CALLBACK(notify_system_supports_color_schemes_cb),
                             self,
                             G_CONNECT_SWAPPED);
 
@@ -699,34 +699,34 @@ window_main_init(WindowMain *self) {
     self->hex_buffer_size = 1001;
     self->hex_buffer = g_malloc(self->hex_buffer_size);
     fill_buf(self->hex_buffer);
-    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA (self->hex_widget), hex_widget_draw_function, self, NULL);
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(self->hex_widget), hex_widget_draw_function, self, NULL);
 
     GtkEventController *scroll = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
-    g_signal_connect_object(scroll, "scroll", G_CALLBACK (hex_widget_scroll_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(scroll, "scroll-begin", G_CALLBACK (hex_widget_scroll_begin_cb), self, G_CONNECT_DEFAULT);
-    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER (scroll));
+    g_signal_connect_object(scroll, "scroll", G_CALLBACK(hex_widget_scroll_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(scroll, "scroll-begin", G_CALLBACK(hex_widget_scroll_begin_cb), self, G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(scroll));
 
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(self->scroll_bar);
     gtk_adjustment_set_upper(scroll_adj, (int) (self->hex_buffer_size / BYTES_PER_LINE) +
                                          (self->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
-    g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK (scroll_bar_value_changed_cb), self,
+    g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK(scroll_bar_value_changed_cb), self,
                             G_CONNECT_DEFAULT);
 
-    g_signal_connect_object(self->test_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
+    g_signal_connect_object(self->test_button, "clicked", G_CALLBACK(window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->erase_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
+    g_signal_connect_object(self->erase_button, "clicked", G_CALLBACK(window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->read_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
+    g_signal_connect_object(self->read_button, "clicked", G_CALLBACK(window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->write_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
+    g_signal_connect_object(self->write_button, "clicked", G_CALLBACK(window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
 
     g_signal_connect_object(self->flash_type_selector, "notify::selected-item",
-                            G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
+                            G_CALLBACK(dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_manufacturer_selector, "notify::selected-item",
-                            G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
+                            G_CALLBACK(dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->flash_name_selector, "notify::selected-item",
-                            G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
+                            G_CALLBACK(dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
     self->programmer = ezp_find_programmer();
     if (!self->programmer) {
         window_main_set_buttons_sensitive(self, false);
