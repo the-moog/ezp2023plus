@@ -129,7 +129,8 @@
                                             </object>
                                         </child>
                                         <child>
-                                            <object class="GtkDropDown">
+                                            <object class="GtkDropDown" id="speed_selector">
+                                                <property name="name">speed_selector</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
                                                         <items>
@@ -184,6 +185,8 @@
                                             <object class="GtkProgressBar" id="progress_bar">
                                                 <property name="name">progress_bar</property>
                                                 <property name="orientation">horizontal</property>
+                                                <property name="show-text">True</property>
+                                                <property name="visible">False</property>
                                             </object>
                                         </child>
                                     </object>

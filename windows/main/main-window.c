@@ -22,6 +22,7 @@ struct _WindowMain {
     GtkDropDown *flash_type_selector;
     GtkDropDown *flash_manufacturer_selector;
     GtkDropDown *flash_name_selector;
+    GtkDropDown *speed_selector;
     GtkDropDown *flash_size_selector;
     GtkSpinButton *delay_selector;
     GtkSearchEntry *chip_search_entry;
@@ -44,6 +45,8 @@ struct _WindowMain {
 };
 
 G_DEFINE_FINAL_TYPE (WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
+
+static GQuark domain_gquark;
 
 static char *
 get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
@@ -185,6 +188,16 @@ window_main_set_buttons_sensitive(WindowMain *self, gboolean sensitive) {
 }
 
 static void
+window_main_set_selectors_sensitive(WindowMain *self, gboolean sensitive) {
+    gtk_widget_set_sensitive(GTK_WIDGET(self->flash_type_selector), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->flash_manufacturer_selector), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->flash_name_selector), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->speed_selector), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->flash_size_selector), sensitive);
+    gtk_widget_set_sensitive(GTK_WIDGET(self->delay_selector), sensitive);
+}
+
+static void
 chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
     ezp_flash type;
@@ -249,6 +262,120 @@ static void chip_test_task_start(WindowMain *self) {
     g_task_run_in_thread(task, chip_test_task_func);
 }
 
+// READ
+static void
+chip_read_progress_cb_gtk_thread(gpointer user_data) {
+    uint64_t *dat = user_data;
+    WindowMain *wm = (void *) dat[0];
+    gtk_progress_bar_set_fraction(wm->progress_bar, *(double *) &dat[1]);
+    free(user_data);
+}
+
+static void
+chip_read_progress_cb(uint32_t current, uint32_t max, void *user_data) {
+    uint64_t *dat = malloc(sizeof(uint64_t) * 2);
+    dat[0] = (uint64_t) user_data;
+    *(double *) &dat[1] = (double) current / (double) max;
+
+    g_idle_add_once(chip_read_progress_cb_gtk_thread, dat);
+}
+
+static void
+chip_read_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+    WindowMain *wm = EZP_WINDOW_MAIN(source_object);
+
+    gboolean chip_found = false;
+    ezp_chip_data chip_data;
+    char sprintf_buf[48];
+    snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+    chips_list chips = chips_data_repository_get_chips(wm->repo);
+    for (int i = 0; i < chips.length; ++i) {
+        if (!strcmp(chips.data[i].name, sprintf_buf)) {
+            chip_data = chips.data[i];
+            chip_found = true;
+            break;
+        }
+    }
+    if (!chip_found) {
+        printf("Data not found!\n");
+        g_task_return_new_error(task, domain_gquark, (45 << 16) | 45, "CHIP_NOT_FOUND");
+        g_object_unref(task);
+        return;
+    }
+
+    ezp_speed speed = gtk_drop_down_get_selected(wm->speed_selector);
+
+    printf("reading with chip: %s; speed: %d\n", chip_data.name, speed);
+    uint8_t *data;
+    int ret = ezp_read_flash(wm->programmer, &data, &chip_data, speed, chip_read_progress_cb, wm);
+    uint64_t *dat;
+    switch (ret) {
+        case EZP_OK:
+            dat = g_malloc(sizeof(uint64_t) * 2);
+            dat[0] = (uint64_t) data;
+            dat[1] = chip_data.flash;
+            printf("OK\n");
+            g_task_return_pointer(task, dat, NULL);
+            break;
+        case EZP_FLASH_SIZE_OR_PAGE_INVALID:
+            printf("EZP_FLASH_SIZE_OR_PAGE_INVALID\n");
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_FLASH_SIZE_OR_PAGE_INVALID");
+            g_object_unref(task);
+            break;
+        case EZP_LIBUSB_ERROR:
+            printf("EZP_LIBUSB_ERROR\n");
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_LIBUSB_ERROR");
+            g_object_unref(task);
+            break;
+        default:
+            printf("Unknown error: %d\n", ret);
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "UNKNOWN_ERROR");
+            g_object_unref(task);
+            break;
+    }
+    g_object_unref(task);
+}
+
+static void
+chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+    WindowMain *wm = EZP_WINDOW_MAIN(source_object);
+
+    GError *error;
+    uint64_t *dat = g_task_propagate_pointer(G_TASK(res), &error);
+
+    if (!error) {
+        if (wm->hex_buffer) free(wm->hex_buffer);
+        wm->hex_buffer = (char *) dat[0];
+        wm->hex_buffer_size = (int) dat[1];
+        gtk_widget_queue_draw(&wm->hex_widget->widget);
+    }
+
+    AdwDialog *dlg = adw_alert_dialog_new(error ? gettext("Error") : gettext("Success"), error ? error->message : "OK");
+    adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+    adw_dialog_present(dlg, GTK_WIDGET(source_object));
+
+    gtk_widget_set_visible(GTK_WIDGET(EZP_WINDOW_MAIN(source_object)->progress_bar), false);
+    window_main_set_buttons_sensitive(EZP_WINDOW_MAIN(source_object), true);
+    window_main_set_selectors_sensitive(EZP_WINDOW_MAIN(source_object), true);
+
+    if (dat) free(dat);
+    if (error) g_error_free(error);
+}
+
+static void chip_read_task_start(WindowMain *self) {
+    window_main_set_buttons_sensitive(self, false);
+    window_main_set_selectors_sensitive(self, false);
+
+    gtk_progress_bar_set_fraction(self->progress_bar, 0);
+    gtk_progress_bar_set_text(self->progress_bar, gettext("Reading..."));
+    gtk_widget_set_visible(GTK_WIDGET(self->progress_bar), true);
+
+    GTask *task = g_task_new(self, NULL, chip_read_task_result_cb, NULL);
+    g_task_set_task_data(task, NULL, NULL);
+    g_task_run_in_thread(task, chip_read_task_func);
+}
+// READ
+
 static void
 window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
@@ -260,6 +387,7 @@ window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
         printf("Erase button clicked!\n");
     } else if (!strcmp(name, "read_button")) {
         printf("Read button clicked!\n");
+        chip_read_task_start(user_data);
     } else if (!strcmp(name, "write_button")) {
         printf("Write button clicked!\n");
     } else {
@@ -544,6 +672,7 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_type_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_manufacturer_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_name_selector);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, speed_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_size_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, delay_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, chip_search_entry);
@@ -554,6 +683,7 @@ window_main_class_init(WindowMainClass *klass) {
 
 static void
 window_main_init(WindowMain *self) {
+    domain_gquark = g_quark_from_static_string("WindowMain");
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     gtk_widget_init_template(GTK_WIDGET (self));
@@ -590,10 +720,6 @@ window_main_init(WindowMain *self) {
                             G_CONNECT_DEFAULT);
     g_signal_connect_object(self->write_button, "clicked", G_CALLBACK (window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);
-
-    gtk_progress_bar_set_fraction(self->progress_bar, 0.2);
-    gtk_progress_bar_set_text(self->progress_bar, "Reading...");
-    gtk_progress_bar_set_show_text(self->progress_bar, TRUE);
 
     g_signal_connect_object(self->flash_type_selector, "notify::selected-item",
                             G_CALLBACK (dropdown_selected_item_changed_cb), self, G_CONNECT_DEFAULT);
