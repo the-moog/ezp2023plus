@@ -243,7 +243,7 @@ chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCa
 
 static void
 chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
-    GError *error;
+    GError *error = NULL;
     char *message = g_task_propagate_pointer(G_TASK(res), &error);
 
     AdwDialog *dlg = adw_alert_dialog_new(gettext("Test result"), message ? message : error->message);
@@ -340,7 +340,7 @@ static void
 chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
 
-    GError *error;
+    GError *error = NULL;
     uint64_t *dat = g_task_propagate_pointer(G_TASK(res), &error);
 
     if (!error) {
