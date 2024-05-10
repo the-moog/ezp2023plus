@@ -135,8 +135,8 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpo
             }
 
             if (wm->viewer_offset < 0) wm->viewer_offset = 0;
-            if (wm->viewer_offset > wm->hex_buffer_size / BYTES_PER_LINE)
-                wm->viewer_offset = wm->hex_buffer_size / BYTES_PER_LINE;
+            int upperBound = wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
+            if (wm->viewer_offset > upperBound) wm->viewer_offset = upperBound;
 
             if (wm->viewer_offset != prev_viewer_offset) {
                 gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
@@ -150,8 +150,8 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpo
         wm->scroll = 0;
 
         if (wm->viewer_offset < 0) wm->viewer_offset = 0;
-        if (wm->viewer_offset > wm->hex_buffer_size / BYTES_PER_LINE)
-            wm->viewer_offset = wm->hex_buffer_size / BYTES_PER_LINE;
+        int upperBound = wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
+        if (wm->viewer_offset > upperBound) wm->viewer_offset = upperBound;
 
         if (wm->viewer_offset != prev_viewer_offset) {
             gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
@@ -348,6 +348,11 @@ chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer use
         wm->hex_buffer = (char *) dat[0];
         wm->hex_buffer_size = (int) dat[1];
         gtk_widget_queue_draw(&wm->hex_widget->widget);
+        wm->viewer_offset = 0;
+        GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
+        gtk_adjustment_set_upper(scroll_adj, (int) (wm->hex_buffer_size / BYTES_PER_LINE) +
+                                             (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
+        gtk_adjustment_set_value(scroll_adj, wm->viewer_offset);
     }
 
     AdwDialog *dlg = adw_alert_dialog_new(error ? gettext("Error") : gettext("Success"), error ? error->message : "OK");
