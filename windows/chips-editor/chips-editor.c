@@ -18,17 +18,8 @@ struct _WindowChipsEditor {
 G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 
 static void
-window_chips_editor_dispose(GObject *gobject) {
-    WindowChipsEditor *win = EZP_WINDOW_CHIPS_EDITOR(gobject);
-
-    G_OBJECT_CLASS (window_chips_editor_parent_class)->dispose (gobject);
-}
-
-static void
 window_chips_editor_class_init(WindowChipsEditorClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->dispose = window_chips_editor_dispose;
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chips-editor.ui");
@@ -40,7 +31,8 @@ window_chips_editor_class_init(WindowChipsEditorClass *klass) {
 }
 
 static void
-selection_changed_cb(GtkSingleSelection *selection_model, guint start_position, guint count, gpointer user_data) {
+selection_changed_cb(GtkSingleSelection *selection_model, G_GNUC_UNUSED guint start_position, G_GNUC_UNUSED guint count,
+                     G_GNUC_UNUSED gpointer user_data) {
     ChipsEditorListRow *row_data = gtk_single_selection_get_selected_item(selection_model);
     printf("Type: %s, Manufacturer: %s, Name: %s\n", chips_editor_list_row_get_flash_type(row_data),
            chips_editor_list_row_get_manufacturer(row_data), chips_editor_list_row_get_name(row_data));
@@ -54,7 +46,7 @@ search_text_changed_cb(GtkEditable *editable, gpointer data) {
 }
 
 static void
-chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user_data) {
+chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list, gpointer user_data) {
     WindowChipsEditor *self = user_data;
 
     g_list_store_remove_all(self->store);

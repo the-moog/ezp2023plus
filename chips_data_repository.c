@@ -31,12 +31,12 @@ signal_new(const gchar *name, GType itype, GSignalFlags signal_flags,
 }
 
 static void
-chips_data_repository_class_init(ChipsDataRepositoryClass *klass) {
+chips_data_repository_class_init(G_GNUC_UNUSED ChipsDataRepositoryClass *klass) {
 
 }
 
 static void
-chips_data_repository_init(ChipsDataRepository *self) {
+chips_data_repository_init(G_GNUC_UNUSED ChipsDataRepository *self) {
     signals[CHIPS_LIST] = signal_new("chips-list", EZP_TYPE_CHIPS_DATA_REPOSITORY, G_SIGNAL_RUN_LAST, NULL,
                                      NULL, NULL, NULL, G_TYPE_NONE, 1, G_TYPE_POINTER);
 }

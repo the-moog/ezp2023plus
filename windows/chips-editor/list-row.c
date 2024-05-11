@@ -114,7 +114,7 @@ chips_editor_list_row_get_property(GObject *object, guint prop_id, GValue *value
 }
 
 static void
-chips_editor_list_row_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec) {
+chips_editor_list_row_set_property(GObject *object, guint prop_id, G_GNUC_UNUSED const GValue *value, GParamSpec *pspec) {
     G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 }
 
@@ -141,7 +141,7 @@ chips_editor_list_row_class_init(ChipsEditorListRowClass *klass) {
 }
 
 static void
-chips_editor_list_row_init(ChipsEditorListRow *self) {
+chips_editor_list_row_init(G_GNUC_UNUSED ChipsEditorListRow *self) {
 }
 
 ChipsEditorListRow *

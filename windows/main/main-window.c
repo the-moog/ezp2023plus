@@ -49,12 +49,12 @@ G_DEFINE_FINAL_TYPE(WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
 static GQuark domain_gquark;
 
 static char *
-get_color_scheme_icon_name(gpointer user_data, gboolean dark) {
+get_color_scheme_icon_name(G_GNUC_UNUSED gpointer user_data, gboolean dark) {
     return g_strdup(dark ? "light-mode-symbolic" : "dark-mode-symbolic");
 }
 
 static void
-color_scheme_button_clicked_cb(WindowMain *self) {
+color_scheme_button_clicked_cb(G_GNUC_UNUSED WindowMain *self) {
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     if (adw_style_manager_get_dark(manager))
@@ -78,13 +78,13 @@ notify_system_supports_color_schemes_cb(WindowMain *self) {
 #define GAP_POSITION ((BYTES_PER_LINE / 2) - 1)
 #define FONT_SIZE 16
 #define HEX_SPACING (FONT_SIZE * 1.5)
-#define TEXT_SPACING (FONT_SIZE * 0.7)
+//#define TEXT_SPACING (FONT_SIZE * 0.7)
 #define GAP 20
 #define HEX_BLOCK_X_OFFSET 70
-#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
+//#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
 
 static void
-hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
+hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int width, int height, gpointer data) {
     GdkRGBA color;
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
@@ -120,7 +120,7 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
 }
 
 static gboolean
-hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpointer user_data) {
+hex_widget_scroll_cb(GtkEventControllerScroll *self, G_GNUC_UNUSED gdouble dx, gdouble dy, gpointer user_data) {
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
     wm->scroll += dy;
@@ -162,7 +162,7 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, gdouble dx, gdouble dy, gpo
 }
 
 static void
-hex_widget_scroll_begin_cb(GtkEventControllerScroll *self, gpointer user_data) {
+hex_widget_scroll_begin_cb(G_GNUC_UNUSED GtkEventControllerScroll *self, gpointer user_data) {
     EZP_WINDOW_MAIN(user_data)->scroll = 0;
 }
 
@@ -198,7 +198,8 @@ window_main_set_selectors_sensitive(WindowMain *self, gboolean sensitive) {
 }
 
 static void
-chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+chip_test_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer task_data,
+                    G_GNUC_UNUSED GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
     ezp_flash type;
     uint32_t chip_id;
@@ -242,7 +243,7 @@ chip_test_task_func(GTask *task, gpointer source_object, gpointer task_data, GCa
 }
 
 static void
-chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSED gpointer user_data) {
     GError *error = NULL;
     char *message = g_task_propagate_pointer(G_TASK(res), &error);
 
@@ -281,12 +282,14 @@ chip_read_progress_cb(uint32_t current, uint32_t max, void *user_data) {
 }
 
 static void
-chip_read_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer task_data,
+                    G_GNUC_UNUSED GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
 
     gboolean chip_found = false;
     ezp_chip_data chip_data;
     char sprintf_buf[48];
+    //warning about snprintf is ok. just ignore it
     snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
     chips_list chips = chips_data_repository_get_chips(wm->repo);
     for (int i = 0; i < chips.length; ++i) {
@@ -337,7 +340,7 @@ chip_read_task_func(GTask *task, gpointer source_object, gpointer task_data, GCa
 }
 
 static void
-chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSED gpointer user_data) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
 
     GError *error = NULL;
@@ -444,13 +447,15 @@ programmer_status_callback(ezp_status status, void *user_data) {
 }
 
 static void
-programmer_status_task_func(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
+programmer_status_task_func(GTask *task, G_GNUC_UNUSED gpointer source_object, gpointer task_data,
+                            G_GNUC_UNUSED GCancellable *cancellable) {
     ezp_listen_programmer_status(programmer_status_callback, task_data);
     g_task_return_pointer(task, NULL, NULL);
 }
 
 static void
-programmer_status_task_result_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+programmer_status_task_result_cb(G_GNUC_UNUSED GObject *source_object, G_GNUC_UNUSED GAsyncResult *res,
+                                 G_GNUC_UNUSED gpointer user_data) {
     printf("Programmer status task has been stopped\n");
 }
 
@@ -474,7 +479,7 @@ append_string_to_string_list(gpointer data, gpointer user_data) {
 }
 
 static gint
-string_key_compare(gconstpointer a, gconstpointer b, gpointer user_data) {
+string_key_compare(gconstpointer a, gconstpointer b, G_GNUC_UNUSED gpointer user_data) {
     if (!a || !b) g_error("a or b is NULL");
     return strcmp(a, b);
 }
@@ -490,7 +495,7 @@ destroy_strings_g_list(gpointer data) {
 }
 
 static void
-chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user_data) {
+chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *data, gpointer user_data) {
     ezp_chip_data *chips = data->data;
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
@@ -528,7 +533,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
             g_tree_insert(manufs, strdup(type), g_list_append(NULL, strdup(manuf)));
         } else {
             if (g_list_find_custom(ptr, manuf, compare_strings) == NULL) { // avoiding duplicates
-                g_list_append(ptr, strdup(manuf));
+                ptr = g_list_append(ptr, strdup(manuf));
             }
         }
 
@@ -538,7 +543,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
         if (!ptr) {
             g_tree_insert(names, strdup(type), g_list_append(NULL, strdup(name)));
         } else {
-            g_list_append(ptr, strdup(name));
+            ptr = g_list_append(ptr, strdup(name));
         }
     }
 
@@ -610,7 +615,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *data, gpointer user
 }
 
 static void
-dropdown_selected_item_changed_cb(GtkDropDown *self, gpointer *new_value, gpointer user_data) {
+dropdown_selected_item_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
     // warning: dropdown_selected_item_changed_cb is called multiple times during filling dropdowns with data, so we
     // should not use this callback to do any actions. we just save selected strings and then use them when user clicks on the button
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));

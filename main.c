@@ -11,18 +11,19 @@
 ChipsDataRepository *repo;
 
 static void
-show_inspector(GSimpleAction *action, GVariant *state, gpointer user_data) {
+show_inspector(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, G_GNUC_UNUSED gpointer user_data) {
     gtk_window_set_interactive_debugging(TRUE);
 }
 
 static void
-show_chips_editor(GSimpleAction *action, GVariant *state, gpointer user_data) {
+show_chips_editor(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state,
+                  G_GNUC_UNUSED gpointer user_data) {
     WindowChipsEditor *chips_editor = window_chips_editor_new(repo);
     gtk_window_present(GTK_WINDOW(chips_editor));
 }
 
 static void
-show_about(GSimpleAction *action, GVariant *state, gpointer user_data) {
+show_about(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
     const char *developers[] = {
             "Alexandro45",
             NULL
@@ -62,9 +63,9 @@ main(int argc, char **argv) {
 
     AdwApplication *app;
     static GActionEntry app_entries[] = {
-            {"inspector",    show_inspector,    NULL, NULL, NULL},
-            {"chips_editor", show_chips_editor, NULL, NULL, NULL},
-            {"about",        show_about,        NULL, NULL, NULL},
+            {"inspector",    show_inspector,    NULL, NULL, NULL, {0}},
+            {"chips_editor", show_chips_editor, NULL, NULL, NULL, {0}},
+            {"about",        show_about,        NULL, NULL, NULL, {0}},
     };
 
     app = adw_application_new("dev.alexandro45.ezp2023plus", G_APPLICATION_NON_UNIQUE);
