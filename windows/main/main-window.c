@@ -28,10 +28,11 @@ struct _WindowMain {
     GtkSearchEntry *chip_search_entry;
 
     char *hex_buffer;
-    int hex_buffer_size;
-    int viewer_offset;
+    long hex_buffer_size;
+    long viewer_offset;
     int lines_on_screen_count;
     double scroll;
+    uint32_t hex_cursor;
 
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
@@ -80,26 +81,28 @@ notify_system_supports_color_schemes_cb(WindowMain *self) {
 #define HEX_SPACING (FONT_SIZE * 1.5)
 //#define TEXT_SPACING (FONT_SIZE * 0.7)
 #define GAP 20
-#define HEX_BLOCK_X_OFFSET 70
+#define HEX_BLOCK_X_OFFSET 105
 //#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
 
 static void
 hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int width, int height, gpointer data) {
     GdkRGBA color;
+    GdkRGBA cursor_color;
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
     gtk_widget_get_color(GTK_WIDGET(area), &color);
     gdk_cairo_set_source_rgba(cr, &color);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, FONT_SIZE);
+    cairo_set_line_width(cr, 2);
 
     char buffer[10];
     wm->lines_on_screen_count = height / FONT_SIZE;
-    int i = wm->viewer_offset * BYTES_PER_LINE;
+    long i = wm->viewer_offset * BYTES_PER_LINE;
     for (int y = 0; y < wm->lines_on_screen_count; ++y) {
 
         //line numbers
-        sprintf(buffer, "%04X", i & 0xffff);
+        sprintf(buffer, "%08lX", i & 0xffffffff);
         cairo_move_to(cr, 0, y * FONT_SIZE + FONT_SIZE);
         cairo_show_text(cr, buffer);
 
@@ -109,6 +112,15 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
             cairo_move_to(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
                           y * FONT_SIZE + FONT_SIZE);
             cairo_show_text(cr, buffer);
+
+            //cursor
+            if (i == wm->hex_cursor) {
+                gdk_cairo_set_source_rgba(cr, &cursor_color);
+                cairo_rectangle(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
+                                y * FONT_SIZE + FONT_SIZE + 2, FONT_SIZE * 1.2, -FONT_SIZE);
+                cairo_stroke(cr);
+                gdk_cairo_set_source_rgba(cr, &color);
+            }
 
             i++;
             if (i == wm->hex_buffer_size) break;
@@ -126,7 +138,7 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, G_GNUC_UNUSED gdouble dx, g
     wm->scroll += dy;
     if (gtk_event_controller_scroll_get_unit(self) == GDK_SCROLL_UNIT_SURFACE) {
         if (fabs(wm->scroll) >= FONT_SIZE) {
-            int prev_viewer_offset = wm->viewer_offset;
+            long prev_viewer_offset = wm->viewer_offset;
 
             while (fabs(wm->scroll) >= FONT_SIZE) {
                 wm->viewer_offset += wm->scroll > 0 ? 1 : -1;
@@ -135,27 +147,28 @@ hex_widget_scroll_cb(GtkEventControllerScroll *self, G_GNUC_UNUSED gdouble dx, g
             }
 
             if (wm->viewer_offset < 0) wm->viewer_offset = 0;
-            int upperBound = wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
+            long upperBound =
+                    wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
             if (wm->viewer_offset > upperBound) wm->viewer_offset = upperBound;
 
             if (wm->viewer_offset != prev_viewer_offset) {
                 gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
-                gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), wm->viewer_offset);
+                gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), (uint32_t) wm->viewer_offset);
             }
         }
     } else {
-        int prev_viewer_offset = wm->viewer_offset;
+        long prev_viewer_offset = wm->viewer_offset;
 
         wm->viewer_offset += wm->scroll > 0 ? 1 : -1;
         wm->scroll = 0;
 
         if (wm->viewer_offset < 0) wm->viewer_offset = 0;
-        int upperBound = wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
+        long upperBound = wm->hex_buffer_size / BYTES_PER_LINE - (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 1 : 0);
         if (wm->viewer_offset > upperBound) wm->viewer_offset = upperBound;
 
         if (wm->viewer_offset != prev_viewer_offset) {
             gtk_widget_queue_draw(GTK_WIDGET(wm->hex_widget));
-            gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), wm->viewer_offset);
+            gtk_adjustment_set_value(gtk_scrollbar_get_adjustment(wm->scroll_bar), (uint32_t) wm->viewer_offset);
         }
     }
     return TRUE;
@@ -170,8 +183,8 @@ static void
 scroll_bar_value_changed_cb(GtkAdjustment *adjustment, gpointer user_data) {
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
-    int prev_viewer_offset = wm->viewer_offset;
-    wm->viewer_offset = (int) gtk_adjustment_get_value(adjustment);
+    long prev_viewer_offset = wm->viewer_offset;
+    wm->viewer_offset = (uint32_t) gtk_adjustment_get_value(adjustment);
 
     if (prev_viewer_offset != wm->viewer_offset) {
         EZP_WINDOW_MAIN(user_data)->scroll = 0;
@@ -349,13 +362,13 @@ chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSE
     if (!error) {
         if (wm->hex_buffer) free(wm->hex_buffer);
         wm->hex_buffer = (char *) dat[0];
-        wm->hex_buffer_size = (int) dat[1];
+        wm->hex_buffer_size = (uint32_t) dat[1];
         gtk_widget_queue_draw(&wm->hex_widget->widget);
         wm->viewer_offset = 0;
         GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
-        gtk_adjustment_set_upper(scroll_adj, (int) (wm->hex_buffer_size / BYTES_PER_LINE) +
+        gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
                                              (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
-        gtk_adjustment_set_value(scroll_adj, wm->viewer_offset);
+        gtk_adjustment_set_value(scroll_adj, (uint32_t) wm->viewer_offset);
     }
 
     AdwDialog *dlg = adw_alert_dialog_new(error ? gettext("Error") : gettext("Success"), error ? error->message : "OK");
@@ -515,16 +528,16 @@ chip_selected(WindowMain *wm, GtkStringObject *selected_type, GtkStringObject *s
     ezp_chip_data *chip_data = chips_data_repository_find_chip(wm->repo, sprintf_buf);
     if (!chip_data) g_error("chip_data not found");
 
-    wm->hex_buffer_size = (int) chip_data->flash;
+    wm->hex_buffer_size = chip_data->flash;
     wm->hex_buffer = g_realloc(wm->hex_buffer, wm->hex_buffer_size);
     memset(wm->hex_buffer, 0xff, wm->hex_buffer_size);
 
     gtk_widget_queue_draw(&wm->hex_widget->widget);
     wm->viewer_offset = 0;
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
-    gtk_adjustment_set_upper(scroll_adj, (int) (wm->hex_buffer_size / BYTES_PER_LINE) +
+    gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
                                          (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
-    gtk_adjustment_set_value(scroll_adj, wm->viewer_offset);
+    gtk_adjustment_set_value(scroll_adj, (uint32_t) wm->viewer_offset);
 }
 
 static void
@@ -752,7 +765,7 @@ window_main_init(WindowMain *self) {
     gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(scroll));
 
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(self->scroll_bar);
-    gtk_adjustment_set_upper(scroll_adj, (int) (self->hex_buffer_size / BYTES_PER_LINE) +
+    gtk_adjustment_set_upper(scroll_adj, (uint32_t)(self->hex_buffer_size / BYTES_PER_LINE) +
                                          (self->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
     g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK(scroll_bar_value_changed_cb), self,
                             G_CONNECT_DEFAULT);
