@@ -35,7 +35,7 @@ struct _WindowMain {
 
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
-
+    gboolean dropdowns_setup_completed;
     char selected_chip_type[48];
     char selected_chip_manuf[48];
     char selected_chip_name[48];
@@ -495,9 +495,26 @@ destroy_strings_g_list(gpointer data) {
 }
 
 static void
+chip_selected(WindowMain *wm, GtkStringObject *selected_type, GtkStringObject *selected_manuf,
+              GtkStringObject *selected_name) {
+    if (!selected_type || !selected_manuf || !selected_name) {
+        wm->selected_chip_type[0] = '\0';
+        wm->selected_chip_manuf[0] = '\0';
+        wm->selected_chip_name[0] = '\0';
+        return;
+    }
+    strlcpy(wm->selected_chip_type, gtk_string_object_get_string(selected_type), 48);
+    strlcpy(wm->selected_chip_manuf, gtk_string_object_get_string(selected_manuf), 48);
+    strlcpy(wm->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
+
+    printf("Flash selected: %s,%s,%s\n", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+}
+
+static void
 chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *data, gpointer user_data) {
     ezp_chip_data *chips = data->data;
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    wm->dropdowns_setup_completed = false;
 
     // STEP 1 - compute dropdown items
     // at first, we need to get list of types
@@ -612,12 +629,15 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *data,
     if (t_pos >= 0) gtk_drop_down_set_selected(wm->flash_type_selector, t_pos);
     if (m_pos >= 0) gtk_drop_down_set_selected(wm->flash_manufacturer_selector, m_pos);
     if (n_pos >= 0) gtk_drop_down_set_selected(wm->flash_name_selector, n_pos);
+    wm->dropdowns_setup_completed = true;
+    GtkStringObject *selected_type = gtk_drop_down_get_selected_item(wm->flash_type_selector);
+    GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(wm->flash_manufacturer_selector);
+    GtkStringObject *selected_name = gtk_drop_down_get_selected_item(wm->flash_name_selector);
+    chip_selected(wm, selected_type, selected_manuf, selected_name);
 }
 
 static void
 dropdown_selected_item_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
-    // warning: dropdown_selected_item_changed_cb is called multiple times during filling dropdowns with data, so we
-    // should not use this callback to do any actions. we just save selected strings and then use them when user clicks on the button
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
 
@@ -640,11 +660,9 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new
         GtkStringObject *selected_manuf = gtk_drop_down_get_selected_item(wm->flash_manufacturer_selector);
         GtkStringObject *selected_name = gtk_drop_down_get_selected_item(self);
 
-        strlcpy(wm->selected_chip_type, gtk_string_object_get_string(selected_type), 48);
-        strlcpy(wm->selected_chip_manuf, gtk_string_object_get_string(selected_manuf), 48);
-        strlcpy(wm->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
-
-        printf("Flash selected: %s,%s,%s\n", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+        // dropdown_selected_item_changed_cb is called multiple times during filling dropdowns with data, so we should
+        // use dropdowns_setup_completed flag to call chips_selected only once
+        if (wm->dropdowns_setup_completed) chip_selected(wm, selected_type, selected_manuf, selected_name);
     } else {
         g_warning("Unknown selector!");
     }
