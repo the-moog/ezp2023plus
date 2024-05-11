@@ -44,6 +44,15 @@ chips_data_repository_get_chips(ChipsDataRepository *self);
 /**
  *
  * @param self
+ * @param name
+ * @return
+ */
+ezp_chip_data *
+chips_data_repository_find_chip(ChipsDataRepository *self, const char *name);
+
+/**
+ *
+ * @param self
  * @param data new item
  * @return 0 if success or -1 if unable to realloc
  */

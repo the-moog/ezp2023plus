@@ -508,6 +508,23 @@ chip_selected(WindowMain *wm, GtkStringObject *selected_type, GtkStringObject *s
     strlcpy(wm->selected_chip_name, gtk_string_object_get_string(selected_name), 48);
 
     printf("Flash selected: %s,%s,%s\n", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+
+    char sprintf_buf[48];
+    //warning about snprintf is ok. just ignore it
+    snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+    ezp_chip_data *chip_data = chips_data_repository_find_chip(wm->repo, sprintf_buf);
+    if (!chip_data) g_error("chip_data not found");
+
+    wm->hex_buffer_size = (int) chip_data->flash;
+    wm->hex_buffer = g_realloc(wm->hex_buffer, wm->hex_buffer_size);
+    memset(wm->hex_buffer, 0xff, wm->hex_buffer_size);
+
+    gtk_widget_queue_draw(&wm->hex_widget->widget);
+    wm->viewer_offset = 0;
+    GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
+    gtk_adjustment_set_upper(scroll_adj, (int) (wm->hex_buffer_size / BYTES_PER_LINE) +
+                                         (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
+    gtk_adjustment_set_value(scroll_adj, wm->viewer_offset);
 }
 
 static void
@@ -724,9 +741,9 @@ window_main_init(WindowMain *self) {
 
     notify_system_supports_color_schemes_cb(self);
 
-    self->hex_buffer_size = 1001;
+    self->hex_buffer_size = 1;
     self->hex_buffer = g_malloc(self->hex_buffer_size);
-    fill_buf(self->hex_buffer);
+    memset(self->hex_buffer, 0xff, self->hex_buffer_size);
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(self->hex_widget), hex_widget_draw_function, self, NULL);
 
     GtkEventController *scroll = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);

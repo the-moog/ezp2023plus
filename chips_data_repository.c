@@ -87,11 +87,20 @@ chips_data_repository_save(ChipsDataRepository *self) {
     return ezp_chips_data_write(self->chips, self->chips_count, self->file_path);
 }
 
-chips_list chips_data_repository_get_chips(ChipsDataRepository *self) {
+chips_list
+chips_data_repository_get_chips(ChipsDataRepository *self) {
     chips_list list;
     list.data = self->chips;
     list.length = self->chips_count;
     return list;
+}
+
+ezp_chip_data *
+chips_data_repository_find_chip(ChipsDataRepository *self, const char *name) {
+    for (int i = 0; i < self->chips_count; ++i)
+        if (!strcmp(self->chips[i].name, name))
+            return &self->chips[i];
+    return NULL;
 }
 
 int
