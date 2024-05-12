@@ -33,6 +33,7 @@ struct _WindowMain {
     int lines_on_screen_count;
     double scroll;
     uint32_t hex_cursor;
+    gboolean nibble;
 
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
@@ -78,23 +79,48 @@ notify_system_supports_color_schemes_cb(WindowMain *self) {
 #define BYTES_PER_LINE 16
 #define GAP_POSITION ((BYTES_PER_LINE / 2) - 1)
 #define FONT_SIZE 16
-#define HEX_SPACING (FONT_SIZE * 1.5)
+#define HEX_SPACING (char_width * 2.5)
 //#define TEXT_SPACING (FONT_SIZE * 0.7)
-#define GAP 20
+#define GAP (char_width * 2)
 #define HEX_BLOCK_X_OFFSET 105
 //#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
 
 static void
 hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int width, int height, gpointer data) {
     GdkRGBA color;
-    GdkRGBA cursor_color;
+    GdkRGBA cursor_color_focused = {
+            .red = 0,
+            .green = 0,
+            .blue = 1,
+            .alpha = 1
+    };
+    GdkRGBA cursor_color_unfocused = {
+            .red = 0.5f,
+            .green = 0.5f,
+            .blue = 0.8f,
+            .alpha = 1
+    };
+    GdkRGBA nibble_color_focused = {
+            .red = 0,
+            .green = 0,
+            .blue = 1 * 0.5f,
+            .alpha = 1
+    };
+    GdkRGBA nibble_color_unfocused = {
+            .red = 0.5f * 0.5f,
+            .green = 0.5f * 0.5f,
+            .blue = 0.8f * 0.5f,
+            .alpha = 1
+    };
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
     gtk_widget_get_color(GTK_WIDGET(area), &color);
     gdk_cairo_set_source_rgba(cr, &color);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, FONT_SIZE);
-    cairo_set_line_width(cr, 2);
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, "F", &extents);
+    double char_width = extents.x_advance;
 
     char buffer[10];
     wm->lines_on_screen_count = height / FONT_SIZE;
@@ -107,28 +133,38 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
         cairo_show_text(cr, buffer);
 
         for (int x = 0; x < BYTES_PER_LINE; ++x) {
+            //cursor
+            if (i == wm->hex_cursor) {
+                //nibble
+                gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &nibble_color_focused
+                                                                                  : &nibble_color_unfocused);
+                cairo_rectangle(cr, (wm->nibble ? char_width : 0) + HEX_BLOCK_X_OFFSET + x * HEX_SPACING +
+                                    (x > GAP_POSITION ? GAP : 0), y * FONT_SIZE + FONT_SIZE + 2, char_width,
+                                -FONT_SIZE);
+                cairo_fill(cr);
+
+                //frame
+                cairo_set_line_width(cr, gtk_widget_has_focus(&area->widget) ? 2 : 1);
+                gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &cursor_color_focused
+                                                                                  : &cursor_color_unfocused);
+                cairo_rectangle(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
+                                y * FONT_SIZE + FONT_SIZE + 2, char_width * 2, -FONT_SIZE);
+                cairo_stroke(cr);
+
+                gdk_cairo_set_source_rgba(cr, &color);
+            }
+
             //hex
             sprintf(buffer, "%02X", wm->hex_buffer[i] & 0xff);
             cairo_move_to(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
                           y * FONT_SIZE + FONT_SIZE);
             cairo_show_text(cr, buffer);
 
-            //cursor
-            if (i == wm->hex_cursor) {
-                gdk_cairo_set_source_rgba(cr, &cursor_color);
-                cairo_rectangle(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
-                                y * FONT_SIZE + FONT_SIZE + 2, FONT_SIZE * 1.2, -FONT_SIZE);
-                cairo_stroke(cr);
-                gdk_cairo_set_source_rgba(cr, &color);
-            }
-
             i++;
             if (i == wm->hex_buffer_size) break;
         }
         if (i == wm->hex_buffer_size) break;
     }
-
-    cairo_fill(cr);
 }
 
 static gboolean
@@ -365,6 +401,8 @@ chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSE
         wm->hex_buffer_size = (uint32_t) dat[1];
         gtk_widget_queue_draw(&wm->hex_widget->widget);
         wm->viewer_offset = 0;
+        wm->hex_cursor = 0;
+        wm->nibble = false;
         GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
         gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
                                              (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
@@ -534,6 +572,8 @@ chip_selected(WindowMain *wm, GtkStringObject *selected_type, GtkStringObject *s
 
     gtk_widget_queue_draw(&wm->hex_widget->widget);
     wm->viewer_offset = 0;
+    wm->hex_cursor = 0;
+    wm->nibble = false;
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
     gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
                                          (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
@@ -698,6 +738,106 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new
     }
 }
 
+static gboolean
+hex_key_press_cb(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state,
+                 gpointer user_data) {
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+
+    switch (keyval) {
+        case GDK_KEY_Up:
+            if (wm->hex_cursor < BYTES_PER_LINE) {
+                wm->hex_cursor = 0;
+            } else {
+                wm->hex_cursor -= BYTES_PER_LINE;
+            }
+            wm->nibble = false;
+            gtk_widget_queue_draw(&wm->hex_widget->widget);
+            return GDK_EVENT_STOP;
+        case GDK_KEY_Down:
+            if (wm->hex_cursor + BYTES_PER_LINE >= wm->hex_buffer_size - 1) {
+                wm->hex_cursor = wm->hex_buffer_size - 1;
+            } else {
+                wm->hex_cursor += BYTES_PER_LINE;
+            }
+            wm->nibble = false;
+            gtk_widget_queue_draw(&wm->hex_widget->widget);
+            return GDK_EVENT_STOP;
+        case GDK_KEY_Left:
+            wm->nibble = !wm->nibble;
+            if (wm->hex_cursor && wm->nibble) wm->hex_cursor--;
+            gtk_widget_queue_draw(&wm->hex_widget->widget);
+            return GDK_EVENT_STOP;
+        case GDK_KEY_Right:
+            wm->nibble = !wm->nibble;
+            if (wm->hex_cursor < wm->hex_buffer_size - 1 && !wm->nibble) wm->hex_cursor++;
+            gtk_widget_queue_draw(&wm->hex_widget->widget);
+            return GDK_EVENT_STOP;
+        case GDK_KEY_0:
+            printf("0");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_1:
+            printf("1");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_2:
+            printf("2");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_3:
+            printf("3");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_4:
+            printf("4");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_5:
+            printf("5");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_6:
+            printf("6");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_7:
+            printf("7");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_8:
+            printf("8");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_9:
+            printf("9");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_A:
+        case GDK_KEY_a:
+            printf("A");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_B:
+        case GDK_KEY_b:
+            printf("B");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_C:
+        case GDK_KEY_c:
+            printf("C");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_D:
+        case GDK_KEY_d:
+            printf("D");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_E:
+        case GDK_KEY_e:
+            printf("E");
+            return GDK_EVENT_STOP;
+        case GDK_KEY_F:
+        case GDK_KEY_f:
+            printf("F");
+            return GDK_EVENT_STOP;
+        default:
+            return GDK_EVENT_PROPAGATE;
+    }
+}
+
+static void
+hex_pressed_cb(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data) {
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    gtk_widget_grab_focus(&wm->hex_widget->widget);
+    printf("pressed\n");
+}
+
 static void
 window_main_finalize(GObject *gobject) {
     WindowMain *wm = EZP_WINDOW_MAIN(gobject);
@@ -759,16 +899,30 @@ window_main_init(WindowMain *self) {
     memset(self->hex_buffer, 0xff, self->hex_buffer_size);
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(self->hex_widget), hex_widget_draw_function, self, NULL);
 
-    GtkEventController *scroll = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
-    g_signal_connect_object(scroll, "scroll", G_CALLBACK(hex_widget_scroll_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(scroll, "scroll-begin", G_CALLBACK(hex_widget_scroll_begin_cb), self, G_CONNECT_DEFAULT);
-    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(scroll));
+    GtkEventController *ev_ctl = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+    g_signal_connect_object(ev_ctl, "scroll", G_CALLBACK(hex_widget_scroll_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(ev_ctl, "scroll-begin", G_CALLBACK(hex_widget_scroll_begin_cb), self, G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(ev_ctl));
 
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(self->scroll_bar);
     gtk_adjustment_set_upper(scroll_adj, (uint32_t)(self->hex_buffer_size / BYTES_PER_LINE) +
                                          (self->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
     g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK(scroll_bar_value_changed_cb), self,
                             G_CONNECT_DEFAULT);
+
+    ev_ctl = gtk_event_controller_key_new();
+    g_signal_connect(ev_ctl, "key-pressed", G_CALLBACK(hex_key_press_cb), self);
+    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(ev_ctl));
+
+    ev_ctl = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+    g_signal_connect(ev_ctl, "pressed", G_CALLBACK(hex_pressed_cb), self);
+    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(ev_ctl));
+
+    ev_ctl = gtk_event_controller_focus_new();
+    g_signal_connect_swapped (ev_ctl, "enter", G_CALLBACK(gtk_widget_queue_draw), GTK_WIDGET(self->hex_widget));
+    g_signal_connect_swapped (ev_ctl, "leave", G_CALLBACK(gtk_widget_queue_draw), GTK_WIDGET(self->hex_widget));
+    gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(ev_ctl));
+
 
     g_signal_connect_object(self->test_button, "clicked", G_CALLBACK(window_main_button_clicked_cb), self,
                             G_CONNECT_DEFAULT);

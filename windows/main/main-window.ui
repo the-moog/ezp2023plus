@@ -200,6 +200,7 @@
                                                 <property name="hexpand">True</property>
                                                 <property name="vexpand">True</property>
                                                 <property name="can-focus">True</property>
+                                                <property name="focusable">True</property>
                                             </object>
                                         </child>
                                         <child>
