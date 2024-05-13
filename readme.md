@@ -2,7 +2,10 @@ Work in progress
 
 # Dependencies
 
-    [TODO: some gtk deps]
+    gio
+    glib
+    gtk4
+    libadwaita
     libusb
     cmake (make)
     meson (make)
@@ -22,7 +25,7 @@ Work in progress
 
 # TODO list
 - add gtk deps
-- write
+- delete hardcoded path in main.c
 - erase (not implemented in libezp2023plus)
-- basic hex editor operations(edit bytes, ctrl-z)
+- ctrl-z for hex editor
 - translations

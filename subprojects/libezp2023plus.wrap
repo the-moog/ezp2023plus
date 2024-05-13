@@ -1,0 +1,7 @@
+[wrap-git]
+url = https://github.com/alexandro-45/libezp2023plus.git
+revision = master
+
+[provide]
+dependency_names = libezp2023plus
+libezp2023plus = libezp2023plus_dep

@@ -77,10 +77,7 @@ app_sources = [
     app_config_h,
 ]
 
-cmake = import('cmake')
-libezp_sub_proj = cmake.subproject('libezp2023plus')
-libezp2023plus_dep = libezp_sub_proj.dependency('ezp2023plus')
-
+libezp2023plus_dep = dependency('libezp2023plus')
 libadwaita_dep = dependency('libadwaita-1', version : '>= 1.2')
 
 app = executable('appezp2023plus',
