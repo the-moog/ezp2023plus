@@ -739,10 +739,12 @@ dropdown_selected_item_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new
 }
 
 static gboolean
-hex_key_press_cb(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state,
-                 gpointer user_data) {
+hex_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller, guint keyval, G_GNUC_UNUSED guint keycode,
+                 GdkModifierType state, gpointer user_data) {
+    if (state != GDK_NO_MODIFIER_MASK) return GDK_EVENT_PROPAGATE;
+
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
-    gboolean input_key_pressed = false;
+    int input = -1;
 
     switch (keyval) {
         case GDK_KEY_Up:
@@ -775,108 +777,82 @@ hex_key_press_cb(GtkEventControllerKey *controller, guint keyval, guint keycode,
             return GDK_EVENT_STOP;
         case GDK_KEY_0:
         case GDK_KEY_KP_0:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            input_key_pressed = true;
+            input = 0;
             break;
         case GDK_KEY_1:
         case GDK_KEY_KP_1:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x01 : 0x10;
-            input_key_pressed = true;
+            input = 1;
             break;
         case GDK_KEY_2:
         case GDK_KEY_KP_2:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x02 : 0x20;
-            input_key_pressed = true;
+            input = 2;
             break;
         case GDK_KEY_3:
         case GDK_KEY_KP_3:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x03 : 0x30;
-            input_key_pressed = true;
+            input = 3;
             break;
         case GDK_KEY_4:
         case GDK_KEY_KP_4:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x04 : 0x40;
-            input_key_pressed = true;
+            input = 4;
             break;
         case GDK_KEY_5:
         case GDK_KEY_KP_5:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x05 : 0x50;
-            input_key_pressed = true;
+            input = 5;
             break;
         case GDK_KEY_6:
         case GDK_KEY_KP_6:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x06 : 0x60;
-            input_key_pressed = true;
+            input = 6;
             break;
         case GDK_KEY_7:
         case GDK_KEY_KP_7:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x07 : 0x70;
-            input_key_pressed = true;
+            input = 7;
             break;
         case GDK_KEY_8:
         case GDK_KEY_KP_8:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x08 : 0x80;
-            input_key_pressed = true;
+            input = 8;
             break;
         case GDK_KEY_9:
         case GDK_KEY_KP_9:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x09 : 0x90;
-            input_key_pressed = true;
+            input = 9;
             break;
         case GDK_KEY_A:
         case GDK_KEY_a:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x0a : 0xa0;
-            input_key_pressed = true;
+            input = 0xa;
             break;
         case GDK_KEY_B:
         case GDK_KEY_b:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x0b : 0xb0;
-            input_key_pressed = true;
+            input = 0xb;
             break;
         case GDK_KEY_C:
         case GDK_KEY_c:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0xfc : 0xcf;
-            input_key_pressed = true;
+            input = 0xc;
             break;
         case GDK_KEY_D:
         case GDK_KEY_d:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x0d : 0xd0;
-            input_key_pressed = true;
+            input = 0xd;
             break;
         case GDK_KEY_E:
         case GDK_KEY_e:
-            wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x0e : 0xe0;
-            input_key_pressed = true;
+            input = 0xe;
             break;
         case GDK_KEY_F:
         case GDK_KEY_f:
-            wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? 0x0f : 0xf0;
-            input_key_pressed = true;
+            input = 0xf;
             break;
         default:
             return GDK_EVENT_PROPAGATE;
     }
 
-    if (input_key_pressed) {
+    if (input >= 0) {
+        wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
+        wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? (input & 0xf) : (input << 4) & 0xf0;
+
         wm->nibble = !wm->nibble;
         if (wm->hex_cursor < wm->hex_buffer_size - 1 && !wm->nibble) wm->hex_cursor++;
         gtk_widget_queue_draw(&wm->hex_widget->widget);
         return GDK_EVENT_STOP;
     }
+    return GDK_EVENT_PROPAGATE;
 }
 
 static void
