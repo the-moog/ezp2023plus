@@ -2,12 +2,8 @@ project('epz2023plus', 'c',
         version : '0.1-dev',
         license : 'GPL-2.0-or-later',
         meson_version : '>= 0.59.0',
-        default_options : ['buildtype=custom', 'c_std=gnu17'],
+        default_options : ['optimization=0', 'warning_level=2', 'buildtype=debug', 'c_std=gnu17']
 )
-
-if get_option('buildtype') == 'custom'
-    add_project_arguments('-Wall', '-Wextra', '-O0', '-ggdb', language : 'c')
-endif
 
 # Maybe will be used
 #version_arr = meson.project_version().split('-')
