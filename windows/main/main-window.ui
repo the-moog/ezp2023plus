@@ -196,6 +196,16 @@
                                         <property name="name">right_box</property>
                                         <property name="orientation">horizontal</property>
                                         <child>
+                                            <object class="GtkLabel" id="_dummy1">
+                                                <property name="name">hex_cursor_frame</property>
+                                                <property name="visible">False</property>
+                                            </object>
+                                            <object class="GtkLabel" id="_dummy2">
+                                                <property name="name">hex_cursor_bg</property>
+                                                <property name="visible">False</property>
+                                            </object>
+                                        </child>
+                                        <child>
                                             <object class="GtkDrawingArea" id="hex_widget">
                                                 <property name="hexpand">True</property>
                                                 <property name="vexpand">True</property>

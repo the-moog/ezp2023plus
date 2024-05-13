@@ -25,3 +25,11 @@ box > spinbutton {
 #progress_bar {
     margin: 5px 10px 5px 10px;
 }
+
+#hex_cursor_frame {
+    color: @accent_bg_color;
+}
+
+#hex_cursor_bg {
+    color: @accent_bg_color;
+}

@@ -26,6 +26,8 @@ struct _WindowMain {
     GtkDropDown *flash_size_selector;
     GtkSpinButton *delay_selector;
     GtkSearchEntry *chip_search_entry;
+    GtkWidget *_dummy1; //idk how to get colors from css in another way
+    GtkWidget *_dummy2;
 
     uint8_t *hex_buffer;
     long hex_buffer_size;
@@ -35,6 +37,8 @@ struct _WindowMain {
     uint32_t hex_cursor;
     gboolean nibble;
     double char_width;
+    GdkRGBA hex_cursor_frame_color;
+    GdkRGBA hex_cursor_bg_color;
 
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
@@ -79,40 +83,16 @@ notify_system_supports_color_schemes_cb(WindowMain *self) {
 
 #define BYTES_PER_LINE 16
 #define GAP_POSITION ((BYTES_PER_LINE / 2) - 1)
-#define FONT_SIZE 16
+#define FONT_SIZE 18
 #define HEX_SPACING (wm->char_width * 2.5)
 //#define TEXT_SPACING (FONT_SIZE * 0.7)
 #define GAP (wm->char_width * 2)
-#define HEX_BLOCK_X_OFFSET 105
+#define HEX_BLOCK_X_OFFSET (wm->char_width * 10)
 //#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
 
 static void
 hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int width, int height, gpointer data) {
     GdkRGBA color;
-    GdkRGBA cursor_color_focused = {
-            .red = 0,
-            .green = 0,
-            .blue = 1,
-            .alpha = 1
-    };
-    GdkRGBA cursor_color_unfocused = {
-            .red = 0.5f,
-            .green = 0.5f,
-            .blue = 0.8f,
-            .alpha = 1
-    };
-    GdkRGBA nibble_color_focused = {
-            .red = 0,
-            .green = 0,
-            .blue = 1 * 0.5f,
-            .alpha = 1
-    };
-    GdkRGBA nibble_color_unfocused = {
-            .red = 0.5f * 0.5f,
-            .green = 0.5f * 0.5f,
-            .blue = 0.8f * 0.5f,
-            .alpha = 1
-    };
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
     gtk_widget_get_color(GTK_WIDGET(area), &color);
@@ -137,8 +117,12 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
             //cursor
             if (i == wm->hex_cursor) {
                 //nibble
-                gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &nibble_color_focused
-                                                                                  : &nibble_color_unfocused);
+                if (gtk_widget_has_focus(&area->widget)) {
+                    gdk_cairo_set_source_rgba(cr, &wm->hex_cursor_bg_color);
+                } else {
+                    cairo_set_source_rgba(cr, wm->hex_cursor_bg_color.red * 0.5, wm->hex_cursor_bg_color.green * 0.5,
+                                          wm->hex_cursor_bg_color.blue * 0.5, wm->hex_cursor_bg_color.alpha);
+                }
                 cairo_rectangle(cr, (wm->nibble ? wm->char_width : 0) + HEX_BLOCK_X_OFFSET + x * HEX_SPACING +
                                     (x > GAP_POSITION ? GAP : 0), y * FONT_SIZE + FONT_SIZE + 2, wm->char_width,
                                 -FONT_SIZE);
@@ -146,8 +130,13 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
 
                 //frame
                 cairo_set_line_width(cr, gtk_widget_has_focus(&area->widget) ? 2 : 1);
-                gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &cursor_color_focused
-                                                                                  : &cursor_color_unfocused);
+                if (gtk_widget_has_focus(&area->widget)) {
+                    gdk_cairo_set_source_rgba(cr, &wm->hex_cursor_frame_color);
+                } else {
+                    cairo_set_source_rgba(cr, wm->hex_cursor_frame_color.red * 0.5,
+                                          wm->hex_cursor_frame_color.green * 0.5,
+                                          wm->hex_cursor_frame_color.blue * 0.5, wm->hex_cursor_frame_color.alpha);
+                }
                 cairo_rectangle(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
                                 y * FONT_SIZE + FONT_SIZE + 2, wm->char_width * 2, -FONT_SIZE);
                 cairo_stroke(cr);
@@ -921,6 +910,8 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_size_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, delay_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, chip_search_entry);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy1);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy2);
 
     gtk_widget_class_bind_template_callback(widget_class, get_color_scheme_icon_name);
     gtk_widget_class_bind_template_callback(widget_class, color_scheme_button_clicked_cb);
@@ -940,6 +931,9 @@ window_main_init(WindowMain *self) {
                             G_CONNECT_SWAPPED);
 
     notify_system_supports_color_schemes_cb(self);
+
+    gtk_widget_get_color(self->_dummy1, &self->hex_cursor_frame_color);
+    gtk_widget_get_color(self->_dummy2, &self->hex_cursor_bg_color);
 
     self->hex_buffer_size = 1;
     self->hex_buffer = g_malloc(self->hex_buffer_size);
