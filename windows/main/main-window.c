@@ -425,20 +425,106 @@ static void chip_read_task_start(WindowMain *self) {
 }
 // READ
 
+//WRITE
+static void
+chip_write_progress_cb_gtk_thread(gpointer user_data) {
+    uint64_t *dat = user_data;
+    WindowMain *wm = (void *) dat[0];
+    gtk_progress_bar_set_fraction(wm->progress_bar, *(double *) &dat[1]);
+    free(user_data);
+}
+
+static void
+chip_write_progress_cb(uint32_t current, uint32_t max, void *user_data) {
+    uint64_t *dat = malloc(sizeof(uint64_t) * 2);
+    dat[0] = (uint64_t) user_data;
+    *(double *) &dat[1] = (double) current / (double) max;
+
+    g_idle_add_once(chip_write_progress_cb_gtk_thread, dat);
+}
+
+static void
+chip_write_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer task_data,
+                    G_GNUC_UNUSED GCancellable *cancellable) {
+    WindowMain *wm = EZP_WINDOW_MAIN(source_object);
+
+    char sprintf_buf[48];
+    //warning about snprintf is ok. just ignore it
+    snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
+    ezp_chip_data *chip_data = chips_data_repository_find_chip(wm->repo, sprintf_buf);
+    if (!chip_data) {
+        g_task_return_new_error(task, domain_gquark, (45 << 16) | 45, "CHIP_NOT_FOUND");
+        g_object_unref(task);
+        return;
+    }
+
+    ezp_speed speed = gtk_drop_down_get_selected(wm->speed_selector);
+
+    printf("writing with chip: %s; speed: %d\n", chip_data->name, speed);
+    int ret = ezp_write_flash(wm->programmer, wm->hex_buffer, chip_data, speed, chip_write_progress_cb, wm);
+    switch (ret) {
+        case EZP_OK:
+            g_task_return_pointer(task, NULL, NULL);
+            break;
+        case EZP_FLASH_SIZE_OR_PAGE_INVALID:
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_FLASH_SIZE_OR_PAGE_INVALID");
+            g_object_unref(task);
+            break;
+        case EZP_LIBUSB_ERROR:
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_LIBUSB_ERROR");
+            g_object_unref(task);
+            break;
+        default:
+            printf("Unknown error: %d\n", ret);
+            g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "UNKNOWN_ERROR");
+            g_object_unref(task);
+            break;
+    }
+    g_object_unref(task);
+}
+
+static void
+chip_write_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSED gpointer user_data) {
+    GError *error = NULL;
+    g_task_propagate_pointer(G_TASK(res), &error);
+
+    AdwDialog *dlg = adw_alert_dialog_new(error ? gettext("Error") : gettext("Success"), error ? error->message : "OK");
+    adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+    adw_dialog_present(dlg, GTK_WIDGET(source_object));
+
+    gtk_widget_set_visible(GTK_WIDGET(EZP_WINDOW_MAIN(source_object)->progress_bar), false);
+    window_main_set_buttons_sensitive(EZP_WINDOW_MAIN(source_object), true);
+    window_main_set_selectors_sensitive(EZP_WINDOW_MAIN(source_object), true);
+
+    if (error) g_error_free(error);
+}
+
+static void chip_write_task_start(WindowMain *self) {
+    window_main_set_buttons_sensitive(self, false);
+    window_main_set_selectors_sensitive(self, false);
+
+    gtk_progress_bar_set_fraction(self->progress_bar, 0);
+    gtk_progress_bar_set_text(self->progress_bar, gettext("Writing..."));
+    gtk_widget_set_visible(GTK_WIDGET(self->progress_bar), true);
+
+    GTask *task = g_task_new(self, NULL, chip_write_task_result_cb, NULL);
+    g_task_set_task_data(task, NULL, NULL);
+    g_task_run_in_thread(task, chip_write_task_func);
+}
+//WRITE
+
 static void
 window_main_button_clicked_cb(GtkButton *self, gpointer user_data) {
     const char *name = gtk_widget_get_name(GTK_WIDGET(self));
 
     if (!strcmp(name, "test_button")) {
-        printf("Test button clicked!\n");
         chip_test_task_start(user_data);
     } else if (!strcmp(name, "erase_button")) {
         printf("Erase button clicked!\n");
     } else if (!strcmp(name, "read_button")) {
-        printf("Read button clicked!\n");
         chip_read_task_start(user_data);
     } else if (!strcmp(name, "write_button")) {
-        printf("Write button clicked!\n");
+        chip_write_task_start(user_data);
     } else {
         g_warning("Unknown button clicked!");
     }
