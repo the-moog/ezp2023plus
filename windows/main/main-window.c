@@ -34,6 +34,7 @@ struct _WindowMain {
     double scroll;
     uint32_t hex_cursor;
     gboolean nibble;
+    double char_width;
 
     GTree *models_for_manufacturer_selector;
     GTree *models_for_name_selector;
@@ -79,9 +80,9 @@ notify_system_supports_color_schemes_cb(WindowMain *self) {
 #define BYTES_PER_LINE 16
 #define GAP_POSITION ((BYTES_PER_LINE / 2) - 1)
 #define FONT_SIZE 16
-#define HEX_SPACING (char_width * 2.5)
+#define HEX_SPACING (wm->char_width * 2.5)
 //#define TEXT_SPACING (FONT_SIZE * 0.7)
-#define GAP (char_width * 2)
+#define GAP (wm->char_width * 2)
 #define HEX_BLOCK_X_OFFSET 105
 //#define TEXT_BLOCK_X_OFFSET (HEX_BLOCK_X_OFFSET + 430)
 
@@ -120,7 +121,7 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
     cairo_set_font_size(cr, FONT_SIZE);
     cairo_text_extents_t extents;
     cairo_text_extents(cr, "F", &extents);
-    double char_width = extents.x_advance;
+    wm->char_width = extents.x_advance;
 
     char buffer[10];
     wm->lines_on_screen_count = height / FONT_SIZE;
@@ -138,8 +139,8 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
                 //nibble
                 gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &nibble_color_focused
                                                                                   : &nibble_color_unfocused);
-                cairo_rectangle(cr, (wm->nibble ? char_width : 0) + HEX_BLOCK_X_OFFSET + x * HEX_SPACING +
-                                    (x > GAP_POSITION ? GAP : 0), y * FONT_SIZE + FONT_SIZE + 2, char_width,
+                cairo_rectangle(cr, (wm->nibble ? wm->char_width : 0) + HEX_BLOCK_X_OFFSET + x * HEX_SPACING +
+                                    (x > GAP_POSITION ? GAP : 0), y * FONT_SIZE + FONT_SIZE + 2, wm->char_width,
                                 -FONT_SIZE);
                 cairo_fill(cr);
 
@@ -148,7 +149,7 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
                 gdk_cairo_set_source_rgba(cr, gtk_widget_has_focus(&area->widget) ? &cursor_color_focused
                                                                                   : &cursor_color_unfocused);
                 cairo_rectangle(cr, HEX_BLOCK_X_OFFSET + x * HEX_SPACING + (x > GAP_POSITION ? GAP : 0),
-                                y * FONT_SIZE + FONT_SIZE + 2, char_width * 2, -FONT_SIZE);
+                                y * FONT_SIZE + FONT_SIZE + 2, wm->char_width * 2, -FONT_SIZE);
                 cairo_stroke(cr);
 
                 gdk_cairo_set_source_rgba(cr, &color);
@@ -404,7 +405,7 @@ chip_read_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSE
         wm->hex_cursor = 0;
         wm->nibble = false;
         GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
-        gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
+        gtk_adjustment_set_upper(scroll_adj, (uint32_t) (wm->hex_buffer_size / BYTES_PER_LINE) +
                                              (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
         gtk_adjustment_set_value(scroll_adj, (uint32_t) wm->viewer_offset);
     }
@@ -575,7 +576,7 @@ chip_selected(WindowMain *wm, GtkStringObject *selected_type, GtkStringObject *s
     wm->hex_cursor = 0;
     wm->nibble = false;
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(wm->scroll_bar);
-    gtk_adjustment_set_upper(scroll_adj, (uint32_t)(wm->hex_buffer_size / BYTES_PER_LINE) +
+    gtk_adjustment_set_upper(scroll_adj, (uint32_t) (wm->hex_buffer_size / BYTES_PER_LINE) +
                                          (wm->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
     gtk_adjustment_set_value(scroll_adj, (uint32_t) wm->viewer_offset);
 }
@@ -856,10 +857,32 @@ hex_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller, guint keyval, 
 }
 
 static void
-hex_pressed_cb(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data) {
+hex_pressed_cb(G_GNUC_UNUSED GtkGestureClick *gesture, G_GNUC_UNUSED int n_press, double x, double y,
+               gpointer user_data) {
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
     gtk_widget_grab_focus(&wm->hex_widget->widget);
-    printf("pressed\n");
+
+    x -= HEX_BLOCK_X_OFFSET;
+    if (x >= ((int) GAP_POSITION + 1) * HEX_SPACING) {
+        x -= GAP;
+    }
+    double d_col = x / HEX_SPACING;
+    if (d_col < 0) d_col = 0;
+    else if (d_col >= BYTES_PER_LINE) d_col = BYTES_PER_LINE - 0.5;
+    uint32_t col = (uint32_t) d_col;
+
+    gboolean nibble = (d_col - col) >= 0.5;
+
+    double d_row = (uint32_t) ((y - 2) / FONT_SIZE);
+    if (d_row < 0) d_row = 0;
+    else if (d_row >= wm->lines_on_screen_count) d_row = wm->lines_on_screen_count - 1;
+    uint32_t row = (uint32_t) d_row;
+
+    wm->hex_cursor = BYTES_PER_LINE * (wm->viewer_offset + row) + col;
+    if (wm->hex_cursor >= wm->hex_buffer_size) wm->hex_cursor = wm->hex_buffer_size - 1;
+    wm->nibble = nibble;
+
+    gtk_widget_queue_draw(&wm->hex_widget->widget);
 }
 
 static void
@@ -929,7 +952,7 @@ window_main_init(WindowMain *self) {
     gtk_widget_add_controller(GTK_WIDGET(self->hex_widget), GTK_EVENT_CONTROLLER(ev_ctl));
 
     GtkAdjustment *scroll_adj = gtk_scrollbar_get_adjustment(self->scroll_bar);
-    gtk_adjustment_set_upper(scroll_adj, (uint32_t)(self->hex_buffer_size / BYTES_PER_LINE) +
+    gtk_adjustment_set_upper(scroll_adj, (uint32_t) (self->hex_buffer_size / BYTES_PER_LINE) +
                                          (self->hex_buffer_size % BYTES_PER_LINE == 0 ? 0 : 1));
     g_signal_connect_object(scroll_adj, "value-changed", G_CALLBACK(scroll_bar_value_changed_cb), self,
                             G_CONNECT_DEFAULT);
