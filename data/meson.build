@@ -58,3 +58,8 @@ install_data(
     'dev.alexandro45.ezp2023plus-symbolic.svg',
     install_dir : datadir / 'icons' / 'hicolor' / 'symbolic' / 'apps'
 )
+
+install_data(
+    'chips.dat',
+    install_dir : datafilesdir
+)

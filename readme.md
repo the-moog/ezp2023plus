@@ -24,8 +24,7 @@ Work in progress
     $ sudo meson install -C buildDir
 
 # TODO list
-- add gtk deps
-- delete hardcoded path in main.c
+- try to build on a clean machine
 - erase (not implemented in libezp2023plus)
 - ctrl-z for hex editor
 - translations

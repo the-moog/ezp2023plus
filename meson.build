@@ -1,4 +1,4 @@
-project('epz2023plus', 'c',
+project('ezp2023plus', 'c',
         version : '0.1-dev',
         license : 'GPL-2.0-or-later',
         meson_version : '>= 0.59.0',
@@ -19,6 +19,7 @@ if package_subdir != ''
     prefix = get_option('prefix') / package_subdir
     localedir = get_option('localedir') / package_subdir
     datadir = get_option('datadir') / package_subdir
+    datafilesdir = get_option('datadir') / package_subdir / meson.project_name()
     libdir = get_option('libdir') / package_subdir
     girdir = get_option('datadir') / package_subdir / 'gir-1.0'
     typelibdir = get_option('libdir') / package_subdir / 'girepository-1.0'
@@ -27,6 +28,7 @@ else
     prefix = get_option('prefix')
     localedir = get_option('localedir')
     datadir = get_option('datadir')
+    datafilesdir = get_option('datadir') / meson.project_name()
     libdir = get_option('libdir')
     girdir = get_option('datadir') / 'gir-1.0'
     typelibdir = get_option('libdir') / 'girepository-1.0'
@@ -39,10 +41,11 @@ subdir('po')
 subdir('data')
 
 app_config_data = configuration_data()
-app_config_data.set_quoted('APP_METAINFO', appstream_file.full_path())
 app_config_data.set_quoted('VCS_TAG', '@VCS_TAG@')
 app_config_data.set_quoted('TRANSLATION_DOMAIN', translation_domain)
 app_config_data.set_quoted('LOCALE_DIR', '@0@'.format(prefix / localedir))
+app_config_data.set_quoted('PROJECT_NAME', '@0@'.format(meson.project_name()))
+app_config_data.set_quoted('DATA_DIR', '@0@'.format(prefix / datafilesdir))
 
 app_config_h = vcs_tag(
     input : configure_file(
