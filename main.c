@@ -43,6 +43,55 @@ show_about(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, g
 }
 
 static void
+file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer data) {
+    GError *error = NULL;
+    AdwDialog *dlg;
+    GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source_object), res, &error);
+    if (error) {
+        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(data));
+        g_error_free(error);
+    }
+    if (!file) return;
+
+    char *path = g_file_get_path(file);
+    int ret = chips_data_repository_import(repo, path);
+    const char *error_msg;
+    switch (ret) {
+        case EZP_ERROR_IO:
+            error_msg = "Can't read chips data: io error";
+            break;
+        case EZP_ERROR_INVALID_FILE:
+            error_msg = "Can't read chips data: invalid file";
+            break;
+        case 0:
+            break;
+        default:
+            printf("Can't read chips data: unknown error %d\n", ret);
+            error_msg = "Can't read chips data: unknown error";
+            break;
+    }
+
+    dlg = adw_alert_dialog_new(!ret ? gettext("Success") : gettext("Error"),
+                               !ret ? "Data imported successfully" : error_msg);
+    adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+    adw_dialog_present(dlg, GTK_WIDGET(data));
+
+    g_free(path);
+    g_object_unref(file);
+}
+
+static void
+import(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    GtkApplication *app = GTK_APPLICATION (user_data);
+    GtkWindow *window = gtk_application_get_active_window(app);
+
+    GtkFileDialog *dlg = gtk_file_dialog_new();
+    gtk_file_dialog_open(dlg, window, NULL, file_chooser_cb, NULL);
+}
+
+static void
 show_main_window(GtkApplication *app) {
     WindowMain *window = window_main_new(app, repo);
     gtk_window_present(GTK_WINDOW (window));
@@ -81,7 +130,7 @@ main(int argc, char **argv) {
     bind_textdomain_codeset(TRANSLATION_DOMAIN, "UTF-8");
     textdomain(TRANSLATION_DOMAIN);
 
-    char* path = prepare_data_file();
+    char *path = prepare_data_file();
     repo = chips_data_repository_new(path);
     int ret = chips_data_repository_read(repo);
     if (ret) {
@@ -104,6 +153,7 @@ main(int argc, char **argv) {
             {"inspector",    show_inspector,    NULL, NULL, NULL, {0}},
             {"chips_editor", show_chips_editor, NULL, NULL, NULL, {0}},
             {"about",        show_about,        NULL, NULL, NULL, {0}},
+            {"import",       import,            NULL, NULL, NULL, {0}},
     };
 
     app = adw_application_new("dev.alexandro45.ezp2023plus", G_APPLICATION_NON_UNIQUE);

@@ -26,6 +26,9 @@ struct _WindowMain {
     GtkDropDown *flash_size_selector;
     GtkSpinButton *delay_selector;
     GtkSearchEntry *chip_search_entry;
+    GtkWidget *left_panel;
+    GtkWidget *right_box;
+    AdwStatusPage *status_page;
     GtkWidget *_dummy1; //idk how to get colors from css in another way
     GtkWidget *_dummy2;
 
@@ -660,6 +663,18 @@ static void
 chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *data, gpointer user_data) {
     ezp_chip_data *chips = data->data;
     WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+
+    if (data->length == 0) {
+        gtk_widget_set_visible(wm->left_panel, false);
+        gtk_widget_set_visible(wm->right_box, false);
+        gtk_widget_set_visible(GTK_WIDGET(wm->status_page), true);
+        return;
+    } else {
+        gtk_widget_set_visible(wm->left_panel, true);
+        gtk_widget_set_visible(wm->right_box, true);
+        gtk_widget_set_visible(GTK_WIDGET(wm->status_page), false);
+    }
+
     wm->dropdowns_setup_completed = false;
 
     // STEP 1 - compute dropdown items
@@ -996,6 +1011,9 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowMain, flash_size_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, delay_selector);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, chip_search_entry);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, left_panel);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, right_box);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, status_page);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy1);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy2);
 

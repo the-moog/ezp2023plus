@@ -36,6 +36,15 @@ chips_data_repository_save(ChipsDataRepository *self);
 /**
  *
  * @param self
+ * @param file_path
+ * @return 0 if success or some "EZP_*" error
+ */
+int
+chips_data_repository_import(ChipsDataRepository *self, const char *file_path);
+
+/**
+ *
+ * @param self
  * @return chips_list
  */
 chips_list

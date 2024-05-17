@@ -87,6 +87,28 @@ chips_data_repository_save(ChipsDataRepository *self) {
     return ezp_chips_data_write(self->chips, self->chips_count, self->file_path);
 }
 
+int
+chips_data_repository_import(ChipsDataRepository *self, const char *file_path) {
+    ezp_chip_data *data = NULL;
+    int ret = ezp_chips_data_read(&data, file_path);
+    if (ret >= 0) {
+        if (ret == 0) return 0;
+        if (!self->chips) {
+            self->chips = data;
+            self->chips_count = ret;
+        } else {
+            self->chips = g_realloc_n(self->chips, self->chips_count + ret, sizeof(ezp_chip_data));
+            memcpy(self->chips + self->chips_count, data, sizeof(ezp_chip_data) * ret);
+            self->chips_count += ret;
+            free(data);
+        }
+        emit_chips_list(self);
+        return 0;
+    } else {
+        return ret;
+    }
+}
+
 chips_list
 chips_data_repository_get_chips(ChipsDataRepository *self) {
     chips_list list;

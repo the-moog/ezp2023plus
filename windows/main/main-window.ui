@@ -67,7 +67,46 @@
                             <object class="GtkBox">
                                 <property name="orientation">horizontal</property>
                                 <child>
+                                    <object class="AdwStatusPage" id="status_page">
+                                        <property name="name">status_page</property>
+                                        <property name="vexpand">True</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="visible">False</property>
+                                        <property name="icon-name">no-chips-symbolic</property>
+                                        <property name="title" translatable="yes">Chips database is empty</property>
+                                        <property name="description" translatable="yes"><![CDATA[The data file may be corrupted or just empty. If you see this message just after installing the program, then something went wrong during installation. You can download <a href="https://github.com/alexandro-45/ezp2023plus/raw/master/data/chips.dat">chips.dat</a> file and try to import it.]]></property>
+                                        <property name="child">
+                                            <object class="GtkBox">
+                                                <property name="orientation">vertical</property>
+                                                <property name="spacing">18</property>
+                                                <property name="halign">center</property>
+                                                <child>
+                                                    <object class="GtkButton">
+                                                        <property name="label" translatable="yes">Import data</property>
+                                                        <property name="action-name">app.import</property>
+                                                        <property name="can-shrink">True</property>
+                                                        <style>
+                                                            <class name="pill"/>
+                                                        </style>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkButton">
+                                                        <property name="label" translatable="yes">Open chips editor</property>
+                                                        <property name="action-name">app.chips_editor</property>
+                                                        <property name="can-shrink">True</property>
+                                                        <style>
+                                                            <class name="pill"/>
+                                                        </style>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </property>
+                                    </object>
+                                </child>
+                                <child>
                                     <object class="GtkBox" id="left_panel">
+                                        <property name="name">left_panel</property>
                                         <property name="orientation">vertical</property>
                                         <child>
                                             <object class="GtkDropDown" id="flash_type_selector">
@@ -192,7 +231,7 @@
                                     </object>
                                 </child>
                                 <child>
-                                    <object class="GtkBox">
+                                    <object class="GtkBox" id="right_box">
                                         <property name="name">right_box</property>
                                         <property name="orientation">horizontal</property>
                                         <child>

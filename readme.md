@@ -24,6 +24,7 @@ Work in progress
     $ sudo meson install -C buildDir
 
 # TODO list
+- automatic test before read or write
 - try to build on a clean machine
 - erase (not implemented in libezp2023plus)
 - ctrl-z for hex editor
