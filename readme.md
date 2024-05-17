@@ -24,6 +24,9 @@ Work in progress
     $ sudo meson install -C buildDir
 
 # TODO list
+- chip search from main window
+- delay override from main window
+- flash size override from main window
 - automatic test before read or write
 - try to build on a clean machine
 - erase (not implemented in libezp2023plus)

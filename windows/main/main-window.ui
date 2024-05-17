@@ -141,11 +141,13 @@
                                         <child>
                                             <object class="GtkSearchEntry" id="chip_search_entry">
                                                 <property name="name">chip_search_entry</property>
+                                                <property name="visible">False</property>
                                             </object>
                                         </child>
                                         <child>
                                             <object class="GtkDropDown" id="flash_size_selector">
                                                 <property name="name">flash_size_selector</property>
+                                                <property name="visible">False</property>
                                                 <property name="model">
                                                     <object class="GtkStringList">
 
@@ -156,6 +158,7 @@
                                         <child>
                                             <object class="GtkSpinButton" id="delay_selector">
                                                 <property name="name">delay_selector</property>
+                                                <property name="visible">False</property>
                                                 <property name="adjustment">
                                                     <object class="GtkAdjustment">
                                                         <property name="lower">0</property>
