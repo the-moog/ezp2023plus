@@ -48,12 +48,14 @@ file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer data) {
     AdwDialog *dlg;
     GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source_object), res, &error);
     if (error) {
-        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
-        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
-        adw_dialog_present(dlg, GTK_WIDGET(data));
+        if (error->code != 2) { // not dismissed by user
+            dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+            adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+            adw_dialog_present(dlg, GTK_WIDGET(data));
+        }
         g_error_free(error);
+        return;
     }
-    if (!file) return;
 
     char *path = g_file_get_path(file);
     int ret = chips_data_repository_import(repo, path);
