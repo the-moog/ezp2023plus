@@ -1022,15 +1022,41 @@ window_main_class_init(WindowMainClass *klass) {
 }
 
 static void
+save_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+    WindowMain *wm = user_data;
+    AdwDialog *dlg;
+    GError *error = NULL;
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source_object), res, &error);
+    if (error) {
+        if (!g_error_matches(error, g_quark_try_string("gtk-dialog-error-quark"), GTK_DIALOG_ERROR_DISMISSED)) {
+            dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+            adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+            adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        }
+        g_error_free(error);
+        return;
+    }
+
+    error = NULL;
+    g_file_replace_contents(file, (char *) wm->hex_buffer, wm->hex_buffer_size, NULL, false, G_FILE_CREATE_NONE, NULL,
+                            NULL, &error);
+    if (error) {
+        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        g_error_free(error);
+    }
+}
+
+static void
 save_as_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
-    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
-    printf("Save as\n");
+    GtkFileDialog *dlg = gtk_file_dialog_new();
+    gtk_file_dialog_save(dlg, GTK_WINDOW(user_data), NULL, save_flash_dump_file_chooser_cb, user_data);
 }
 
 static void
 save_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
-    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
-    printf("Save\n");
+    save_as_flash_dump(action, state, user_data);
 }
 
 static void

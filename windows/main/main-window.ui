@@ -5,6 +5,16 @@
     <menu id="primary_menu">
         <section>
             <item>
+                <attribute name="label" translatable="no">_Save</attribute>
+                <attribute name="action">win.save</attribute>
+            </item>
+            <item>
+                <attribute name="label" translatable="no">Sa_ve as</attribute>
+                <attribute name="action">win.save_as</attribute>
+            </item>
+        </section>
+        <section>
+            <item>
                 <attribute name="label" translatable="no">_Inspector</attribute>
                 <attribute name="action">app.inspector</attribute>
             </item>
