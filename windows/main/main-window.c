@@ -976,6 +976,16 @@ hex_pressed_cb(G_GNUC_UNUSED GtkGestureClick *gesture, G_GNUC_UNUSED int n_press
 }
 
 static void
+show_kb_shortcuts(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data){
+    GtkBuilder *builder = gtk_builder_new_from_resource ("/dev/alexandro45/ezp2023plus/ui/windows/kb-shortcuts-overlay.ui");
+    GObject *kb_shortcuts_overlay = gtk_builder_get_object (builder, "kb_shortcuts_overlay");
+
+    gtk_window_set_transient_for(GTK_WINDOW(kb_shortcuts_overlay), GTK_WINDOW(user_data));
+    gtk_window_present(GTK_WINDOW(kb_shortcuts_overlay));
+    g_object_unref(builder);
+}
+
+static void
 window_main_finalize(GObject *gobject) {
     WindowMain *wm = EZP_WINDOW_MAIN(gobject);
     g_free(wm->hex_buffer);
@@ -996,6 +1006,7 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "win.save_as", NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_e, GDK_CONTROL_MASK, "app.chips_editor", NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_i, GDK_CONTROL_MASK, "app.chips_editor", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_question, GDK_CONTROL_MASK, "win.kb_shortcuts", NULL);
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/main/main-window.ui");
@@ -1136,6 +1147,7 @@ window_main_init(WindowMain *self) {
             {"open",    open_flash_dump,    NULL, NULL, NULL, {0}},
             {"save",    save_flash_dump,    NULL, NULL, NULL, {0}},
             {"save_as", save_as_flash_dump, NULL, NULL, NULL, {0}},
+            {"kb_shortcuts", show_kb_shortcuts, NULL, NULL, NULL, {0}},
     };
     g_action_map_add_action_entries(G_ACTION_MAP(self), actions, G_N_ELEMENTS(actions), self);
 
