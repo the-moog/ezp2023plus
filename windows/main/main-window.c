@@ -49,6 +49,7 @@ struct _WindowMain {
     char selected_chip_type[48];
     char selected_chip_manuf[48];
     char selected_chip_name[48];
+    GFile *opened_file;
 
     ChipsDataRepository *repo;
     ezp_programmer *programmer;
@@ -1037,8 +1038,21 @@ window_main_class_init(WindowMainClass *klass) {
 }
 
 static void
+save_flash_dump_to_file(GFile *file, WindowMain *wm) {
+    AdwDialog *dlg;
+    GError *error = NULL;
+    g_file_replace_contents(file, (char *) wm->hex_buffer, wm->hex_buffer_size, NULL, false, G_FILE_CREATE_NONE, NULL,
+                            NULL, &error);
+    if (error) {
+        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(wm));
+        g_error_free(error);
+    }
+}
+
+static void
 save_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
-    WindowMain *wm = user_data;
     AdwDialog *dlg;
     GError *error = NULL;
     GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source_object), res, &error);
@@ -1051,16 +1065,10 @@ save_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpoin
         g_error_free(error);
         return;
     }
-
-    error = NULL;
-    g_file_replace_contents(file, (char *) wm->hex_buffer, wm->hex_buffer_size, NULL, false, G_FILE_CREATE_NONE, NULL,
-                            NULL, &error);
-    if (error) {
-        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
-        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
-        adw_dialog_present(dlg, GTK_WIDGET(user_data));
-        g_error_free(error);
-    }
+    WindowMain *wm = user_data;
+    save_flash_dump_to_file(file, wm);
+    if (wm->opened_file) g_object_unref(wm->opened_file);
+    wm->opened_file = file;
 }
 
 static void
@@ -1071,7 +1079,12 @@ save_as_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *
 
 static void
 save_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
-    save_as_flash_dump(action, state, user_data);
+    WindowMain *wm = user_data;
+    if (wm->opened_file == NULL) {
+        save_as_flash_dump(action, state, user_data);
+    } else {
+        save_flash_dump_to_file(wm->opened_file, wm);
+    }
 }
 
 static void
@@ -1112,7 +1125,6 @@ open_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpoin
     error = NULL;
     char *buffer = NULL;
     g_file_load_contents(file, NULL, &buffer, NULL, NULL, &error);
-    g_object_unref(file);
     if (error) {
         dlg = adw_alert_dialog_new(gettext("Error"), error->message);
         adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
@@ -1126,6 +1138,8 @@ open_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpoin
     wm->hex_cursor = 0;
     wm->nibble = false;
     memcpy(wm->hex_buffer, buffer, wm->hex_buffer_size);
+    if (wm->opened_file) g_object_unref(wm->opened_file);
+    wm->opened_file = file;
     gtk_widget_queue_draw(&wm->hex_widget->widget);
     free(buffer);
 }
@@ -1138,6 +1152,8 @@ open_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *sta
 
 static void
 window_main_init(WindowMain *self) {
+    self->opened_file = NULL;
+
     domain_gquark = g_quark_from_static_string("WindowMain");
     AdwStyleManager *manager = adw_style_manager_get_default();
 
