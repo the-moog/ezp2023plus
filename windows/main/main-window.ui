@@ -32,6 +32,16 @@
                     <object class="AdwToolbarView">
                         <child type="top">
                             <object class="AdwHeaderBar">
+                                <child type="start">
+                                    <object class="AdwSplitButton" id="open_button">
+                                        <property name="name">open_button</property>
+                                        <property name="label" translatable="yes">_Open</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="action-name">win.open</property>
+                                        <property name="tooltip-text" translatable="yes">Open flash dump</property>
+                                        <property name="dropdown-tooltip" translatable="yes">Recently opened flash dumps</property>
+                                    </object>
+                                </child>
                                 <child type="end">
                                     <object class="GtkButton" id="status_icon">
                                         <property name="icon-name">status-error</property>

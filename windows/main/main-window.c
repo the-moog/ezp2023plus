@@ -448,7 +448,7 @@ chip_write_progress_cb(uint32_t current, uint32_t max, void *user_data) {
 
 static void
 chip_write_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer task_data,
-                    G_GNUC_UNUSED GCancellable *cancellable) {
+                     G_GNUC_UNUSED GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
 
     char sprintf_buf[48];
@@ -1022,11 +1022,92 @@ window_main_class_init(WindowMainClass *klass) {
 }
 
 static void
+save_as_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    printf("Save as\n");
+}
+
+static void
+save_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    printf("Save\n");
+}
+
+static void
+open_flash_dump_file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer user_data) {
+    GError *error = NULL;
+    AdwDialog *dlg;
+    GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source_object), res, &error);
+    if (error) {
+        if (error->code != 2) { //file opening not dismissed by user
+            dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+            adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+            adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        }
+        g_error_free(error);
+        return;
+    }
+
+    error = NULL;
+    GFileInfo *info = g_file_query_info(file, G_FILE_ATTRIBUTE_STANDARD_SIZE, G_FILE_QUERY_INFO_NONE, NULL, &error);
+    if (error) {
+        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        g_error_free(error);
+        g_object_unref(file);
+        return;
+    }
+    goffset size = g_file_info_get_size(info);
+    g_object_unref(info);
+
+    if (size != EZP_WINDOW_MAIN(user_data)->hex_buffer_size) {
+        dlg = adw_alert_dialog_new(gettext("Error"), gettext("File size should be equals to flash size"));
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        return;
+    }
+
+    error = NULL;
+    char *buffer = NULL;
+    g_file_load_contents(file, NULL, &buffer, NULL, NULL, &error);
+    g_object_unref(file);
+    if (error) {
+        dlg = adw_alert_dialog_new(gettext("Error"), error->message);
+        adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
+        adw_dialog_present(dlg, GTK_WIDGET(user_data));
+        g_error_free(error);
+        return;
+    }
+
+    WindowMain *wm = EZP_WINDOW_MAIN(user_data);
+    wm->viewer_offset = 0;
+    wm->hex_cursor = 0;
+    wm->nibble = false;
+    memcpy(wm->hex_buffer, buffer, wm->hex_buffer_size);
+    gtk_widget_queue_draw(&wm->hex_widget->widget);
+    free(buffer);
+}
+
+static void
+open_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    GtkFileDialog *dlg = gtk_file_dialog_new();
+    gtk_file_dialog_open(dlg, GTK_WINDOW(user_data), NULL, open_flash_dump_file_chooser_cb, user_data);
+}
+
+static void
 window_main_init(WindowMain *self) {
     domain_gquark = g_quark_from_static_string("WindowMain");
     AdwStyleManager *manager = adw_style_manager_get_default();
 
     gtk_widget_init_template(GTK_WIDGET(self));
+
+    static GActionEntry actions[] = {
+            {"open",    open_flash_dump,    NULL, NULL, NULL, {0}},
+            {"save",    save_flash_dump,    NULL, NULL, NULL, {0}},
+            {"save_as", save_as_flash_dump, NULL, NULL, NULL, {0}},
+    };
+    g_action_map_add_action_entries(G_ACTION_MAP(self), actions, G_N_ELEMENTS(actions), self);
 
     g_signal_connect_object(manager,
                             "notify::system-supports-color-schemes",
