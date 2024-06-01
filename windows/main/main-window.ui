@@ -15,12 +15,6 @@
         </section>
         <section>
             <item>
-                <attribute name="label" translatable="no">_Inspector</attribute>
-                <attribute name="action">app.inspector</attribute>
-            </item>
-        </section>
-        <section>
-            <item>
                 <attribute name="label" translatable="yes">_Chips editor</attribute>
                 <attribute name="action">app.chips_editor</attribute>
             </item>

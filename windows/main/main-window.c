@@ -991,7 +991,11 @@ window_main_class_init(WindowMainClass *klass) {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = window_main_finalize;
 
-    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_q, GDK_CONTROL_MASK, "window.close", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_o, GDK_CONTROL_MASK, "win.open", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK, "win.save", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "win.save_as", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_e, GDK_CONTROL_MASK, "app.chips_editor", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_i, GDK_CONTROL_MASK, "app.chips_editor", NULL);
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/main/main-window.ui");
