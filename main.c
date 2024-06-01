@@ -48,7 +48,7 @@ file_chooser_cb(GObject *source_object, GAsyncResult *res, gpointer data) {
     AdwDialog *dlg;
     GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source_object), res, &error);
     if (error) {
-        if (error->code != 2) { // not dismissed by user
+        if (!g_error_matches(error, g_quark_try_string("gtk-dialog-error-quark"), GTK_DIALOG_ERROR_DISMISSED)) {
             dlg = adw_alert_dialog_new(gettext("Error"), error->message);
             adw_alert_dialog_add_response(ADW_ALERT_DIALOG(dlg), "OK", gettext("OK"));
             adw_dialog_present(dlg, GTK_WIDGET(data));
