@@ -387,20 +387,11 @@ chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer 
                     G_GNUC_UNUSED GCancellable *cancellable) {
     WindowMain *wm = EZP_WINDOW_MAIN(source_object);
 
-    gboolean chip_found = false;
-    ezp_chip_data chip_data;
     char sprintf_buf[48];
     //warning about snprintf is ok. just ignore it
     snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
-    chips_list chips = chips_data_repository_get_chips(wm->repo);//TODO: use chips_data_repository_find_chip
-    for (int i = 0; i < chips.length; ++i) {
-        if (!strcmp(chips.data[i].name, sprintf_buf)) {
-            chip_data = chips.data[i];
-            chip_found = true;
-            break;
-        }
-    }
-    if (!chip_found) {
+    ezp_chip_data *chip_data = chips_data_repository_find_chip(wm->repo, sprintf_buf);
+    if (!chip_data) {
         g_task_return_new_error(task, domain_gquark, (45 << 16) | 45, "CHIP_NOT_FOUND");
         g_object_unref(task);
         return;
@@ -408,17 +399,17 @@ chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer 
 
     ezp_speed speed = gtk_drop_down_get_selected(wm->speed_selector);
 
-    if (!chip_test_before_rw(wm, task, &chip_data)) return;
+    if (!chip_test_before_rw(wm, task, chip_data)) return;
 
-    printf("reading with chip: %s; speed: %d\n", chip_data.name, speed);
+    printf("reading with chip: %s; speed: %d\n", chip_data->name, speed);
     uint8_t *data;
-    int ret = ezp_read_flash(wm->programmer, &data, &chip_data, speed, chip_read_progress_cb, wm);
+    int ret = ezp_read_flash(wm->programmer, &data, chip_data, speed, chip_read_progress_cb, wm);
     uint64_t *dat;
     switch (ret) {
         case EZP_OK:
             dat = g_malloc(sizeof(uint64_t) * 2);
             dat[0] = (uint64_t) data;
-            dat[1] = chip_data.flash;
+            dat[1] = chip_data->flash;
             printf("OK\n");
             g_task_return_pointer(task, dat, NULL);
             break;
