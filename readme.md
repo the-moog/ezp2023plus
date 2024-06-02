@@ -30,5 +30,4 @@ Work in progress
 - automatic test before read or write
 - try to build on a clean machine
 - erase (not implemented in libezp2023plus)
-- ctrl-z for hex editor
 - translations

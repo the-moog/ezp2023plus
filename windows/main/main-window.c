@@ -29,6 +29,8 @@ struct _WindowMain {
     GtkWidget *left_panel;
     GtkWidget *right_box;
     AdwStatusPage *status_page;
+    AdwToastOverlay *toast_overlay;
+    AdwToast *last_displayed_toast;
     GtkWidget *_dummy1; //idk how to get colors from css in another way
     GtkWidget *_dummy2;
 
@@ -50,6 +52,8 @@ struct _WindowMain {
     char selected_chip_manuf[48];
     char selected_chip_name[48];
     GFile *opened_file;
+    GList *undo_buffer;
+    GList *redo_buffer;
 
     ChipsDataRepository *repo;
     ezp_programmer *programmer;
@@ -58,6 +62,12 @@ struct _WindowMain {
 G_DEFINE_FINAL_TYPE(WindowMain, window_main, ADW_TYPE_APPLICATION_WINDOW)
 
 static GQuark domain_gquark;
+
+typedef struct {
+    uint32_t index;
+    uint8_t prev_val;
+    uint8_t new_val;
+} undo_item;
 
 static char *
 get_color_scheme_icon_name(G_GNUC_UNUSED gpointer user_data, gboolean dark) {
@@ -936,8 +946,23 @@ hex_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller, guint keyval, 
     }
 
     if (input >= 0) {
+        undo_item *undo = g_malloc(sizeof(undo_item));
+        undo->index = wm->hex_cursor;
+        undo->prev_val = wm->hex_buffer[wm->hex_cursor];
+
         wm->hex_buffer[wm->hex_cursor] &= wm->nibble ? 0xf0 : 0x0f;
         wm->hex_buffer[wm->hex_cursor] |= wm->nibble ? (input & 0xf) : (input << 4) & 0xf0;
+
+        undo->new_val = wm->hex_buffer[wm->hex_cursor];
+        if (undo->prev_val != undo->new_val) {
+            wm->undo_buffer = g_list_append(wm->undo_buffer, undo);
+        } else {
+            g_free(undo);
+        }
+        if (wm->redo_buffer) {
+            g_list_free_full(wm->redo_buffer, g_free);
+            wm->redo_buffer = NULL;
+        }
 
         wm->nibble = !wm->nibble;
         if (wm->hex_cursor < wm->hex_buffer_size - 1 && !wm->nibble) wm->hex_cursor++;
@@ -977,9 +1002,10 @@ hex_pressed_cb(G_GNUC_UNUSED GtkGestureClick *gesture, G_GNUC_UNUSED int n_press
 }
 
 static void
-show_kb_shortcuts(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data){
-    GtkBuilder *builder = gtk_builder_new_from_resource ("/dev/alexandro45/ezp2023plus/ui/windows/kb-shortcuts-overlay.ui");
-    GObject *kb_shortcuts_overlay = gtk_builder_get_object (builder, "kb_shortcuts_overlay");
+show_kb_shortcuts(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    GtkBuilder *builder = gtk_builder_new_from_resource(
+            "/dev/alexandro45/ezp2023plus/ui/windows/kb-shortcuts-overlay.ui");
+    GObject *kb_shortcuts_overlay = gtk_builder_get_object(builder, "kb_shortcuts_overlay");
 
     gtk_window_set_transient_for(GTK_WINDOW(kb_shortcuts_overlay), GTK_WINDOW(user_data));
     gtk_window_present(GTK_WINDOW(kb_shortcuts_overlay));
@@ -1004,10 +1030,13 @@ window_main_class_init(WindowMainClass *klass) {
 
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_o, GDK_CONTROL_MASK, "win.open", NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK, "win.save", NULL);
-    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "win.save_as", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "win.save_as",
+                                        NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_e, GDK_CONTROL_MASK, "app.chips_editor", NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_i, GDK_CONTROL_MASK, "app.chips_editor", NULL);
     gtk_widget_class_add_binding_action(widget_class, GDK_KEY_question, GDK_CONTROL_MASK, "win.kb_shortcuts", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_z, GDK_CONTROL_MASK, "win.undo", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "win.redo", NULL);
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/main/main-window.ui");
@@ -1030,6 +1059,7 @@ window_main_class_init(WindowMainClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowMain, left_panel);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, right_box);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, status_page);
+    gtk_widget_class_bind_template_child(widget_class, WindowMain, toast_overlay);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy1);
     gtk_widget_class_bind_template_child(widget_class, WindowMain, _dummy2);
 
@@ -1151,8 +1181,51 @@ open_flash_dump(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *sta
 }
 
 static void
+undo(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    WindowMain *wm = user_data;
+    if (wm->undo_buffer) {
+        GList *last_item = g_list_last(wm->undo_buffer);
+        undo_item *undo = last_item->data;
+        wm->hex_buffer[undo->index] = undo->prev_val;
+        wm->undo_buffer = g_list_remove_link(wm->undo_buffer, last_item);
+        wm->redo_buffer = g_list_concat(wm->redo_buffer, last_item);
+        gtk_widget_queue_draw(&wm->hex_widget->widget);
+    } else {
+        if (ADW_IS_TOAST(wm->last_displayed_toast)) {
+            adw_toast_dismiss(wm->last_displayed_toast);
+        }
+        wm->last_displayed_toast = adw_toast_new(gettext("Nothing to undo"));
+        adw_toast_set_timeout(wm->last_displayed_toast, 1);
+        adw_toast_overlay_add_toast(wm->toast_overlay, wm->last_displayed_toast);
+    }
+}
+
+static void
+redo(G_GNUC_UNUSED GSimpleAction *action, G_GNUC_UNUSED GVariant *state, gpointer user_data) {
+    WindowMain *wm = user_data;
+    if (wm->redo_buffer) {
+        GList *last_item = g_list_last(wm->redo_buffer);
+        undo_item *redo = last_item->data;
+        wm->hex_buffer[redo->index] = redo->new_val;
+        wm->redo_buffer = g_list_remove_link(wm->redo_buffer, last_item);
+        wm->undo_buffer = g_list_concat(wm->undo_buffer, last_item);
+        gtk_widget_queue_draw(&wm->hex_widget->widget);
+    } else {
+        if (ADW_IS_TOAST(wm->last_displayed_toast)) {
+            adw_toast_dismiss(wm->last_displayed_toast);
+        }
+        wm->last_displayed_toast = adw_toast_new(gettext("Nothing to redo"));
+        adw_toast_set_timeout(wm->last_displayed_toast, 1);
+        adw_toast_overlay_add_toast(wm->toast_overlay, wm->last_displayed_toast);
+    }
+}
+
+static void
 window_main_init(WindowMain *self) {
     self->opened_file = NULL;
+    self->undo_buffer = NULL;
+    self->redo_buffer = NULL;
+    self->last_displayed_toast = NULL;
 
     domain_gquark = g_quark_from_static_string("WindowMain");
     AdwStyleManager *manager = adw_style_manager_get_default();
@@ -1160,10 +1233,12 @@ window_main_init(WindowMain *self) {
     gtk_widget_init_template(GTK_WIDGET(self));
 
     static GActionEntry actions[] = {
-            {"open",    open_flash_dump,    NULL, NULL, NULL, {0}},
-            {"save",    save_flash_dump,    NULL, NULL, NULL, {0}},
-            {"save_as", save_as_flash_dump, NULL, NULL, NULL, {0}},
-            {"kb_shortcuts", show_kb_shortcuts, NULL, NULL, NULL, {0}},
+            {"open",         open_flash_dump,    NULL, NULL, NULL, {0}},
+            {"save",         save_flash_dump,    NULL, NULL, NULL, {0}},
+            {"save_as",      save_as_flash_dump, NULL, NULL, NULL, {0}},
+            {"kb_shortcuts", show_kb_shortcuts,  NULL, NULL, NULL, {0}},
+            {"undo",         undo,               NULL, NULL, NULL, {0}},
+            {"redo",         redo,               NULL, NULL, NULL, {0}},
     };
     g_action_map_add_action_entries(G_ACTION_MAP(self), actions, G_N_ELEMENTS(actions), self);
 
