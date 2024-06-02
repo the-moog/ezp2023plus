@@ -2,17 +2,28 @@ Work in progress
 
 # Dependencies
 
+## Directly used in code
+
     gio
-    glib
+    glib2
+    glibc
+    cairo
     gtk4
     libadwaita
     libusb
     cmake (make)
     meson (make)
 
+## On clean Arch Linux setup
+
+    libusb (just to make sure. it already installed with package 'pacman')
+    libadwaita (other gtk packages will be installed as dependencies)
+    cmake (make)
+    meson (make)
+
 # Clone
 
-    $ git clone --recursive https://github.com/alexandro-45/ezp2023plus.git
+    $ git clone https://github.com/alexandro-45/ezp2023plus.git
 
 # Build
 
@@ -28,6 +39,5 @@ Work in progress
 - delay override from main window
 - flash size override from main window
 - automatic test before read or write
-- try to build on a clean machine
 - erase (not implemented in libezp2023plus)
 - translations
