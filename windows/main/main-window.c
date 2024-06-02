@@ -309,11 +309,59 @@ chip_test_task_result_cb(GObject *source_object, GAsyncResult *res, G_GNUC_UNUSE
     if (error) g_error_free(error);
 }
 
-static void chip_test_task_start(WindowMain *self) {
+static void
+chip_test_task_start(WindowMain *self) {
     window_main_set_buttons_sensitive(self, false);
     GTask *task = g_task_new(self, NULL, chip_test_task_result_cb, NULL);
     g_task_set_task_data(task, NULL, NULL);
     g_task_run_in_thread(task, chip_test_task_func);
+}
+
+static gboolean
+chip_test_before_rw(WindowMain *wm, GTask *task, ezp_chip_data *chip_data) {
+    ezp_flash type;
+    uint32_t chip_id;
+    int ret = ezp_test_flash(wm->programmer, &type, &chip_id);
+    if (ret != EZP_OK) {
+        switch (ret) {
+            case EZP_INVALID_DATA_FROM_PROGRAMMER:
+                printf("EZP_INVALID_DATA_FROM_PROGRAMMER\n");
+                g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_INVALID_DATA_FROM_PROGRAMMER");
+                break;
+            case EZP_FLASH_NOT_DETECTED:
+                printf("EZP_FLASH_NOT_DETECTED\n");
+                g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_FLASH_NOT_DETECTED");
+                break;
+            case EZP_LIBUSB_ERROR:
+                printf("EZP_LIBUSB_ERROR\n");
+                g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_LIBUSB_ERROR");
+                break;
+            default:
+                printf("Unknown error: %d\n", ret);
+                g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "UNKNOWN_ERROR");
+                break;
+        }
+        g_object_unref(task);
+        return false;
+    }
+
+    if (type != chip_data->clazz) {
+        printf("CHIP_TYPE_NOT_MATCH\n");
+        g_task_return_new_error(task, domain_gquark, (45 << 16) | 46,
+                                gettext("Chip type not match. Actual type is %s, but you selected %s"),
+                                chip_types[type], chip_types[chip_data->clazz]);
+        g_object_unref(task);
+        return false;
+    }
+    if (type == SPI_FLASH && chip_id != chip_data->chip_id) {
+        printf("CHIP_ID_NOT_MATCH\n");
+        g_task_return_new_error(task, domain_gquark, (45 << 16) | 47,
+                                gettext("Chip ID not match. Actual ID is 0x%04x, but you selected 0x%04x"), chip_id,
+                                chip_data->chip_id);
+        g_object_unref(task);
+        return false;
+    }
+    return true;
 }
 
 // READ
@@ -344,7 +392,7 @@ chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer 
     char sprintf_buf[48];
     //warning about snprintf is ok. just ignore it
     snprintf(sprintf_buf, 48, "%s,%s,%s", wm->selected_chip_type, wm->selected_chip_manuf, wm->selected_chip_name);
-    chips_list chips = chips_data_repository_get_chips(wm->repo);
+    chips_list chips = chips_data_repository_get_chips(wm->repo);//TODO: use chips_data_repository_find_chip
     for (int i = 0; i < chips.length; ++i) {
         if (!strcmp(chips.data[i].name, sprintf_buf)) {
             chip_data = chips.data[i];
@@ -353,13 +401,14 @@ chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer 
         }
     }
     if (!chip_found) {
-        printf("Data not found!\n");
         g_task_return_new_error(task, domain_gquark, (45 << 16) | 45, "CHIP_NOT_FOUND");
         g_object_unref(task);
         return;
     }
 
     ezp_speed speed = gtk_drop_down_get_selected(wm->speed_selector);
+
+    if (!chip_test_before_rw(wm, task, &chip_data)) return;
 
     printf("reading with chip: %s; speed: %d\n", chip_data.name, speed);
     uint8_t *data;
@@ -473,6 +522,8 @@ chip_write_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer
     }
 
     ezp_speed speed = gtk_drop_down_get_selected(wm->speed_selector);
+
+    if (!chip_test_before_rw(wm, task, chip_data)) return;
 
     printf("writing with chip: %s; speed: %d\n", chip_data->name, speed);
     int ret = ezp_write_flash(wm->programmer, wm->hex_buffer, chip_data, speed, chip_write_progress_cb, wm);

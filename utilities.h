@@ -1,5 +1,7 @@
 #pragma once
 
+extern const char *chip_types[];
+
 /**
  * @brief Parses a string containing device information into separate components.
  *

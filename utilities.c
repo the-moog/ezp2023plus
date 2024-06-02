@@ -2,6 +2,14 @@
 #include <stdint.h>
 #include <string.h>
 
+const char *chip_types[] = {
+        "SPI_FLASH",
+        "EEPROM_24",
+        "EEPROM_93",
+        "EEPROM_25",
+        "EEPROM_95"
+};
+
 int
 parseName(char name[48], char **clazz, char **manufacturer, char **chip_name) {
     name[47] = '\0';

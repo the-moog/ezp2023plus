@@ -38,6 +38,5 @@ Work in progress
 - chip search from main window
 - delay override from main window
 - flash size override from main window
-- automatic test before read or write
 - erase (not implemented in libezp2023plus)
 - translations
