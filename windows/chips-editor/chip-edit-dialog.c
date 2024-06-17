@@ -29,20 +29,20 @@ struct _DialogChipsEdit {
 G_DEFINE_FINAL_TYPE(DialogChipsEdit, dialog_chips_edit, ADW_TYPE_DIALOG)
 
 static void
-setup_algorithm_selector(GtkDropDown *selector, ezp_chip_data *data) {
-    if (data->clazz > 4) {
+setup_algorithm_selector(GtkDropDown *selector, uint8_t clazz, uint8_t algorithm) {
+    if (clazz > 4) {
         GtkStringList *l = gtk_string_list_new(NULL);
         gtk_string_list_append(l, gettext("Corrupted data"));
         gtk_drop_down_set_model(selector, G_LIST_MODEL(l));
         return;
     }
 
-    GtkStringList *l = gtk_string_list_new(algorithms_for[data->clazz]);
+    GtkStringList *l = gtk_string_list_new(algorithms_for[clazz]);
     gtk_drop_down_set_model(selector, G_LIST_MODEL(l));
-    if (data->clazz == EEPROM_93) {
-        gtk_drop_down_set_selected(selector, data->algorithm < 87 ? data->algorithm - 7 : data->algorithm - 82);
+    if (clazz == EEPROM_93) {
+        gtk_drop_down_set_selected(selector, algorithm < 87 ? algorithm - 7 : algorithm - 82);
     } else {
-        gtk_drop_down_set_selected(selector, data->algorithm);
+        gtk_drop_down_set_selected(selector, algorithm);
     }
 }
 
@@ -68,7 +68,7 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user
     snprintf(chip_id, 11, "0x%x", data->chip_id);
     gtk_entry_set_text(dce->chip_id_selector, chip_id);
 
-    setup_algorithm_selector(dce->algorithm_selector, data);
+    setup_algorithm_selector(dce->algorithm_selector, data->clazz, data->algorithm);
 
     gtk_spin_button_set_value(dce->flash_size_selector, data->flash);
     gtk_spin_button_set_value(dce->flash_page_size_selector, data->flash_page);
@@ -149,6 +149,12 @@ chip_id_text_changed(GtkEditable* self, gpointer user_data) {
 }
 
 static void
+class_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
+    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    setup_algorithm_selector(dce->algorithm_selector, gtk_drop_down_get_selected(self), 0);
+}
+
+static void
 dialog_chips_edit_class_init(DialogChipsEditClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
@@ -188,6 +194,7 @@ dialog_chips_edit_init(DialogChipsEdit *self) {
     g_signal_connect_object(self->prev_btn, "clicked", G_CALLBACK(prev_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->next_btn, "clicked", G_CALLBACK(next_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(chip_id_text_changed), NULL, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(class_selection_changed_cb), self, G_CONNECT_DEFAULT);
 }
 
 DialogChipsEdit *
