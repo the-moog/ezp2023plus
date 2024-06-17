@@ -15,5 +15,6 @@
     <file preprocess="xml-stripblanks">windows/chips-editor/chips-editor.ui</file>
     <file preprocess="xml-stripblanks">windows/main/main-window.ui</file>
     <file preprocess="xml-stripblanks">windows/kb-shortcuts-overlay.ui</file>
+    <file preprocess="xml-stripblanks">windows/chips-editor/chip-edit-dialog.ui</file>
   </gresource>
 </gresources>

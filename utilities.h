@@ -1,6 +1,9 @@
 #pragma once
 
+#include <gtk/gtk.h>
+
 extern const char *chip_types[];
+extern const char *const *algorithms_for[];
 
 /**
  * @brief Parses a string containing device information into separate components.
@@ -26,3 +29,10 @@ parseName(char name[48], char **clazz, char **manufacturer, char **chip_name);
  */
 void
 fill_buf(char *hex_buffer);
+
+void gtk_entry_set_text(GtkEntry *entry, const char *str);
+
+const char *gtk_entry_get_text(GtkEntry *entry);
+
+void
+disable_scroll_for(GtkWidget *widget);

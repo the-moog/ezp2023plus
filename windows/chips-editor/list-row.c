@@ -203,3 +203,53 @@ const char *
 chips_editor_list_row_get_name(ChipsEditorListRow *self) {
     return self->name;
 }
+
+uint32_t
+chips_editor_list_row_get_chip_id(ChipsEditorListRow *self) {
+    return self->chip_id;
+}
+
+uint32_t
+chips_editor_list_row_get_flash_size(ChipsEditorListRow *self) {
+    return self->flash;
+}
+
+uint16_t
+chips_editor_list_row_get_flash_page_size(ChipsEditorListRow *self) {
+    return self->flash_page;
+}
+
+uint8_t
+chips_editor_list_row_get_voltage(ChipsEditorListRow *self) {
+    return self->voltage;
+}
+
+uint8_t
+chips_editor_list_row_get_class(ChipsEditorListRow *self) {
+    return self->clazz;
+}
+
+uint8_t
+chips_editor_list_row_get_algorithm(ChipsEditorListRow *self) {
+    return self->algorithm;
+}
+
+uint16_t
+chips_editor_list_row_get_delay(ChipsEditorListRow *self) {
+    return self->delay;
+}
+
+uint16_t
+chips_editor_list_row_get_eeprom_size(ChipsEditorListRow *self) {
+    return self->eeprom;
+}
+
+uint8_t
+chips_editor_list_row_get_eeprom_page_size(ChipsEditorListRow *self) {
+    return self->eeprom_page;
+}
+
+uint16_t
+chips_editor_list_row_get_extend(ChipsEditorListRow *self) {
+    return self->extend;
+}

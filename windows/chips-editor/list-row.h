@@ -30,4 +30,34 @@ chips_editor_list_row_get_manufacturer(ChipsEditorListRow *self);
 const char *
 chips_editor_list_row_get_name(ChipsEditorListRow *self);
 
+uint32_t
+chips_editor_list_row_get_chip_id(ChipsEditorListRow *self);
+
+uint32_t
+chips_editor_list_row_get_flash_size(ChipsEditorListRow *self);
+
+uint16_t
+chips_editor_list_row_get_flash_page_size(ChipsEditorListRow *self);
+
+uint8_t
+chips_editor_list_row_get_voltage(ChipsEditorListRow *self);
+
+uint8_t
+chips_editor_list_row_get_class(ChipsEditorListRow *self);
+
+uint8_t
+chips_editor_list_row_get_algorithm(ChipsEditorListRow *self);
+
+uint16_t
+chips_editor_list_row_get_delay(ChipsEditorListRow *self);
+
+uint16_t
+chips_editor_list_row_get_eeprom_size(ChipsEditorListRow *self);
+
+uint8_t
+chips_editor_list_row_get_eeprom_page_size(ChipsEditorListRow *self);
+
+uint16_t
+chips_editor_list_row_get_extend(ChipsEditorListRow *self);
+
 G_END_DECLS

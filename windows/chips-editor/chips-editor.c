@@ -1,5 +1,6 @@
 #include "chips-editor.h"
 #include "list-row.h"
+#include "chip-edit-dialog.h"
 #include <glib/gi18n.h>
 #include <ezp_chips_data_file.h>
 
@@ -31,14 +32,6 @@ window_chips_editor_class_init(WindowChipsEditorClass *klass) {
 }
 
 static void
-selection_changed_cb(GtkSingleSelection *selection_model, G_GNUC_UNUSED guint start_position, G_GNUC_UNUSED guint count,
-                     G_GNUC_UNUSED gpointer user_data) {
-    ChipsEditorListRow *row_data = gtk_single_selection_get_selected_item(selection_model);
-    printf("Type: %s, Manufacturer: %s, Name: %s\n", chips_editor_list_row_get_flash_type(row_data),
-           chips_editor_list_row_get_manufacturer(row_data), chips_editor_list_row_get_name(row_data));
-}
-
-static void
 search_text_changed_cb(GtkEditable *editable, gpointer data) {
     printf("search query: %s\n", gtk_editable_get_text(editable));
     WindowChipsEditor *self = EZP_WINDOW_CHIPS_EDITOR(data);
@@ -62,6 +55,13 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list,
 }
 
 static void
+chips_list_activate_cb(GtkColumnView *self, guint position, gpointer user_data) {
+    WindowChipsEditor *sce = EZP_WINDOW_CHIPS_EDITOR(user_data);
+    DialogChipsEdit *dlg = dialog_chips_edit_new(sce->repo, position);
+    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(sce));
+}
+
+static void
 window_chips_editor_init(WindowChipsEditor *self) {
     gtk_widget_init_template(GTK_WIDGET (self));
 
@@ -73,9 +73,9 @@ window_chips_editor_init(WindowChipsEditor *self) {
     GtkFilterListModel *filterModel = gtk_filter_list_model_new(G_LIST_MODEL(self->store), GTK_FILTER(self->filter));
 
     GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(filterModel));
-    g_signal_connect(selection, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
 
     gtk_column_view_set_model(self->chips_list, GTK_SELECTION_MODEL(selection));
+    g_signal_connect_object(self->chips_list, "activate", G_CALLBACK(chips_list_activate_cb), self, G_CONNECT_DEFAULT);
     g_object_unref(selection);
 
     gtk_search_bar_set_key_capture_widget(self->chips_searchbar, GTK_WIDGET (self));

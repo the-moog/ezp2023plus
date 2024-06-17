@@ -33,3 +33,19 @@ box > spinbutton {
 #hex_cursor_bg {
     color: @accent_bg_color;
 }
+
+#vbox > entry {
+    margin: 5px 10px 5px 10px;
+}
+
+#vbox > label {
+    margin: 0 10px 0 10px;
+}
+
+#chip-editor-btn {
+    margin: 10px;
+}
+
+.error {
+    color: red;
+}

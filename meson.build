@@ -66,6 +66,7 @@ app_resources = gnome.compile_resources(
 
 app_sources = [
     app_resources,
+    'windows/chips-editor/chip-edit-dialog.c',
     'windows/chips-editor/chips-editor.c',
     'windows/chips-editor/list-row.c',
     'main.c',

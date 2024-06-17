@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="DialogChipsEdit" parent="AdwDialog">
+        <property name="title" translatable="yes">Chips editor</property>
+        <property name="child">
+            <object class="AdwToolbarView">
+                <child type="top">
+                    <object class="AdwHeaderBar"/>
+                </child>
+                <property name="content">
+                    <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <child>
+                            <object class="GtkScrolledWindow" id="scrolled_window">
+                                <property name="hscrollbar-policy">2</property>
+                                <property name="propagate-natural-width">True</property>
+                                <property name="propagate-natural-height">True</property>
+                                <property name="child">
+                                    <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">vertical</property>
+                                                <property name="name">vbox</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Type</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="type_selector">
+                                                        <property name="placeholder-text">Type</property>
+                                                        <property name="max-length">15</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Manufacturer</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="manuf_selector">
+                                                        <property name="placeholder-text">Manufacturer</property>
+                                                        <property name="max-length">15</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Name</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="name_selector">
+                                                        <property name="placeholder-text">Name</property>
+                                                        <property name="max-length">15</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Chip ID</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="chip_id_selector">
+                                                        <property name="placeholder-text">Chip ID</property>
+                                                        <property name="max-length">10</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Flash size</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="flash_size_selector">
+                                                        <property name="name">flash_size_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">4294967295</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Flash page size</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="flash_page_size_selector">
+                                                        <property name="name">flash_page_size_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">65535</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Voltage</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkDropDown" id="voltage_selector">
+                                                        <property name="name">voltage_selector</property>
+                                                        <property name="model">
+                                                            <object class="GtkStringList">
+                                                                <items>
+                                                                    <item>3.3v</item>
+                                                                    <item>1.8v</item>
+                                                                    <item>5v</item>
+                                                                </items>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">vertical</property>
+                                                <property name="name">vbox</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Class</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkDropDown" id="class_selector">
+                                                        <property name="name">class_selector</property>
+                                                        <property name="model">
+                                                            <object class="GtkStringList">
+                                                                <items>
+                                                                    <item>SPI_FLASH</item>
+                                                                    <item>EEPROM_24</item>
+                                                                    <item>EEPROM_93</item>
+                                                                    <item>EEPROM_25</item>
+                                                                    <item>EEPROM_95</item>
+                                                                </items>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Algorithm</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkDropDown" id="algorithm_selector">
+                                                        <property name="name">algorithm_selector</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Delay</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="delay_selector">
+                                                        <property name="name">delay_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">65535</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">EEPROM size</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="eeprom_size_selector">
+                                                        <property name="name">eeprom_size_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">65535</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">EEPROM page size</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="eeprom_page_size_selector">
+                                                        <property name="name">eeprom_page_size_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">255</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label" translatable="yes">Extend</property>
+                                                        <property name="halign">1</property>
+                                                        <attributes>
+                                                            <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+                                                        </attributes>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="extend_selector">
+                                                        <property name="name">extend_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">65535</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="snap-to-ticks">True</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                        <child>
+                            <object class="GtkCenterBox">
+                                <property name="orientation">horizontal</property>
+                                <property name="start-widget">
+                                    <object class="GtkButton" id="prev_btn">
+                                        <property name="name">chip-editor-btn</property>
+                                        <property name="label" translatable="yes">_Prev</property>
+                                        <property name="use-underline">True</property>
+                                    </object>
+                                </property>
+                                <property name="center-widget">
+                                    <object class="GtkButton" id="save_btn">
+                                        <property name="name">chip-editor-btn</property>
+                                        <property name="label" translatable="yes">_Save</property>
+                                        <property name="use-underline">True</property>
+                                    </object>
+                                </property>
+                                <property name="end-widget">
+                                    <object class="GtkButton" id="next_btn">
+                                        <property name="name">chip-editor-btn</property>
+                                        <property name="label" translatable="yes">_Next</property>
+                                        <property name="use-underline">True</property>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                    </object>
+                </property>
+            </object>
+        </property>
+    </template>
+</interface>
