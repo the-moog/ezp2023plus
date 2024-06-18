@@ -153,9 +153,8 @@ next_btn_click_cb(GtkButton *btn, gpointer user_data) {
 static void
 chip_id_text_changed(GtkEditable *self, gpointer user_data) {
     const char *chip_id_str = gtk_entry_get_text(GTK_ENTRY(self));
-    if (strlen(chip_id_str) > 10) {
-        gtk_widget_add_css_class(GTK_WIDGET(self), "error");
-    } else if (!g_regex_match_simple("^0x[\\da-fA-F]+$", chip_id_str, G_REGEX_DEFAULT, G_REGEX_MATCH_DEFAULT)) {
+    if (strlen(chip_id_str) > 10 ||
+        !g_regex_match_simple("^0x[\\da-fA-F]+$", chip_id_str, G_REGEX_DEFAULT, G_REGEX_MATCH_DEFAULT)) {
         gtk_widget_add_css_class(GTK_WIDGET(self), "error");
     } else {
         gtk_widget_remove_css_class(GTK_WIDGET(self), "error");
