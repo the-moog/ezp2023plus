@@ -4,10 +4,11 @@
     <requires lib="libadwaita" version="1.0"/>
     <template class="DialogChipsEdit" parent="AdwDialog">
         <property name="title" translatable="yes">Chips editor</property>
+        <property name="can-close">No</property>
         <property name="child">
             <object class="AdwToolbarView">
                 <child type="top">
-                    <object class="AdwHeaderBar"/>
+                    <object class="AdwHeaderBar" id="header_bar"/>
                 </child>
                 <property name="content">
                     <object class="GtkBox">

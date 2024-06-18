@@ -5,6 +5,7 @@
 struct _DialogChipsEdit {
     AdwDialog parent_instance;
 
+    AdwHeaderBar *header_bar;
     GtkEntry *type_selector;
     GtkEntry *manuf_selector;
     GtkEntry *name_selector;
@@ -24,6 +25,7 @@ struct _DialogChipsEdit {
 
     ChipsDataRepository *repo;
     guint current_index;
+    gboolean has_unsaved_changes;
 };
 
 G_DEFINE_FINAL_TYPE(DialogChipsEdit, dialog_chips_edit, ADW_TYPE_DIALOG)
@@ -78,6 +80,9 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user
     gtk_spin_button_set_value(dce->eeprom_size_selector, data->eeprom);
     gtk_spin_button_set_value(dce->eeprom_page_size_selector, data->eeprom_page);
     gtk_spin_button_set_value(dce->extend_selector, data->extend);
+
+    dce->has_unsaved_changes = false;
+    adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor"));
 }
 
 static gboolean
@@ -123,17 +128,26 @@ save_btn_click_cb(GtkButton *btn, gpointer user_data) {
     ezp_chip_data data;
     gboolean ret = chip_data_from_widgets(dce, &data);
     printf("chip_data_from_widgets returned %d\n", ret);
-    if (ret) chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
+    if (ret) {
+        //TODO: check return value
+        chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
+        if (dce->has_unsaved_changes) {
+            dce->has_unsaved_changes = false;
+            adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor"));
+        }
+    }
 }
 
 static void
 prev_btn_click_cb(GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    //TODO: check unsaved changes
 }
 
 static void
 next_btn_click_cb(GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    //TODO: check unsaved changes
 }
 
 static void
@@ -155,12 +169,80 @@ class_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value,
 }
 
 static void
+any_entry_changed_cb(GtkEditable* self, gpointer user_data) {
+    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    if (!dce->has_unsaved_changes) {
+        dce->has_unsaved_changes = true;
+        adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor (unsaved)"));
+    }
+}
+
+static void
+any_drop_down_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
+    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    if (!dce->has_unsaved_changes) {
+        dce->has_unsaved_changes = true;
+        adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor (unsaved)"));
+    }
+}
+
+static void
+dialog_chips_editor_realize(GtkWidget* self,gpointer user_data) {
+    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+    ////////////ATTENTION! SHIT CODE BEGIN!//////////////////////
+    //remove this fix and other related stuff when libadwaita will be fixed
+    gpointer win_handle = gtk_widget_get_first_child(GTK_WIDGET(dce->header_bar));
+    gpointer center_box = gtk_widget_get_first_child(GTK_WIDGET(win_handle));
+    gpointer gizmo = gtk_center_box_get_end_widget(GTK_CENTER_BOX(center_box));
+    gpointer box = gtk_widget_get_first_child(gizmo);
+    gpointer controls = gtk_widget_get_first_child(box);
+    gpointer cl_btn = gtk_widget_get_first_child(controls);
+    gtk_actionable_set_action_name(cl_btn, "window.close");
+    /////////////////////////////////////////////////////////////
+}
+
+static void
+unsaved_alert_response_cb(AdwAlertDialog* self, gchar* response, gpointer user_data) {
+    if (!strcmp(response, "discard")) {
+        adw_dialog_force_close(ADW_DIALOG(user_data));
+    } else if (!strcmp(response, "save")) {
+        save_btn_click_cb(NULL, user_data);
+        adw_dialog_force_close(ADW_DIALOG(user_data));
+    }
+}
+
+static void
+chip_edit_dialog_close_attempt(AdwDialog* dialog) {
+    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(dialog);
+    if (dce->has_unsaved_changes) {
+        AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Save changes?"), gettext("Current chip has unsaved changes. Changes which are not saved will be permanently lost.")));
+
+        adw_alert_dialog_add_responses(alert, "cancel", gettext("_Cancel"), "discard", gettext("_Discard"), "save", gettext("S_ave"), NULL);
+
+        adw_alert_dialog_set_response_appearance(alert, "cancel", ADW_RESPONSE_DEFAULT);
+        adw_alert_dialog_set_response_appearance(alert, "discard", ADW_RESPONSE_DESTRUCTIVE);
+        adw_alert_dialog_set_response_appearance(alert, "save", ADW_RESPONSE_SUGGESTED);
+
+        adw_alert_dialog_set_default_response(alert, "cancel");
+        adw_alert_dialog_set_close_response(alert, "cancel");
+
+        g_signal_connect(alert, "response", G_CALLBACK(unsaved_alert_response_cb), dialog);
+
+        adw_dialog_present(ADW_DIALOG(alert), GTK_WIDGET(dialog));
+    } else {
+        adw_dialog_force_close(dialog);
+    }
+}
+
+static void
 dialog_chips_edit_class_init(DialogChipsEditClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    klass->parent_class.close_attempt = chip_edit_dialog_close_attempt;
 
     gtk_widget_class_set_template_from_resource(widget_class,
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chip-edit-dialog.ui");
 
+    gtk_widget_class_bind_template_child(widget_class, DialogChipsEdit, header_bar);
     gtk_widget_class_bind_template_child(widget_class, DialogChipsEdit, type_selector);
     gtk_widget_class_bind_template_child(widget_class, DialogChipsEdit, manuf_selector);
     gtk_widget_class_bind_template_child(widget_class, DialogChipsEdit, name_selector);
@@ -195,6 +277,23 @@ dialog_chips_edit_init(DialogChipsEdit *self) {
     g_signal_connect_object(self->next_btn, "clicked", G_CALLBACK(next_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(chip_id_text_changed), NULL, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(class_selection_changed_cb), self, G_CONNECT_DEFAULT);
+
+    g_signal_connect_object(self->type_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->manuf_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->name_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->flash_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->flash_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->delay_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->eeprom_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->eeprom_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->extend_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+
+    g_signal_connect_object(self->voltage_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->algorithm_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+
+    g_signal_connect_object(self, "realize", G_CALLBACK(dialog_chips_editor_realize), self, G_CONNECT_DEFAULT);
 }
 
 DialogChipsEdit *
