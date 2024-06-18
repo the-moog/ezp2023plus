@@ -151,7 +151,7 @@ next_btn_click_cb(GtkButton *btn, gpointer user_data) {
 }
 
 static void
-chip_id_text_changed(GtkEditable* self, gpointer user_data) {
+chip_id_text_changed(GtkEditable *self, gpointer user_data) {
     const char *chip_id_str = gtk_entry_get_text(GTK_ENTRY(self));
     if (strlen(chip_id_str) > 10) {
         gtk_widget_add_css_class(GTK_WIDGET(self), "error");
@@ -169,7 +169,7 @@ class_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value,
 }
 
 static void
-any_entry_changed_cb(GtkEditable* self, gpointer user_data) {
+any_entry_changed_cb(GtkEditable *self, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     if (!dce->has_unsaved_changes) {
         dce->has_unsaved_changes = true;
@@ -187,7 +187,7 @@ any_drop_down_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *ne
 }
 
 static void
-dialog_chips_editor_realize(GtkWidget* self,gpointer user_data) {
+dialog_chips_editor_realize(GtkWidget *self, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     ////////////ATTENTION! SHIT CODE BEGIN!//////////////////////
     //remove this fix and other related stuff when libadwaita will be fixed
@@ -202,7 +202,7 @@ dialog_chips_editor_realize(GtkWidget* self,gpointer user_data) {
 }
 
 static void
-unsaved_alert_response_cb(AdwAlertDialog* self, gchar* response, gpointer user_data) {
+unsaved_alert_response_cb(AdwAlertDialog *self, gchar *response, gpointer user_data) {
     if (!strcmp(response, "discard")) {
         adw_dialog_force_close(ADW_DIALOG(user_data));
     } else if (!strcmp(response, "save")) {
@@ -212,12 +212,16 @@ unsaved_alert_response_cb(AdwAlertDialog* self, gchar* response, gpointer user_d
 }
 
 static void
-chip_edit_dialog_close_attempt(AdwDialog* dialog) {
+chip_edit_dialog_close_attempt(AdwDialog *dialog) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(dialog);
     if (dce->has_unsaved_changes) {
-        AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Save changes?"), gettext("Current chip has unsaved changes. Changes which are not saved will be permanently lost.")));
+        AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Save changes?"),
+                                                                      gettext("Current chip has unsaved changes. Changes which are not saved will be permanently lost.")));
 
-        adw_alert_dialog_add_responses(alert, "cancel", gettext("_Cancel"), "discard", gettext("_Discard"), "save", gettext("S_ave"), NULL);
+        adw_alert_dialog_add_responses(alert,
+                                       "cancel", gettext("_Cancel"),
+                                       "discard", gettext("_Discard"),
+                                       "save", gettext("S_ave"), NULL);
 
         adw_alert_dialog_set_response_appearance(alert, "cancel", ADW_RESPONSE_DEFAULT);
         adw_alert_dialog_set_response_appearance(alert, "discard", ADW_RESPONSE_DESTRUCTIVE);
@@ -275,23 +279,34 @@ dialog_chips_edit_init(DialogChipsEdit *self) {
     g_signal_connect_object(self->save_btn, "clicked", G_CALLBACK(save_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->prev_btn, "clicked", G_CALLBACK(prev_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->next_btn, "clicked", G_CALLBACK(next_btn_click_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(chip_id_text_changed), NULL, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(class_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(chip_id_text_changed), NULL,
+                            G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(class_selection_changed_cb), self,
+                            G_CONNECT_DEFAULT);
 
     g_signal_connect_object(self->type_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->manuf_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->name_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->flash_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->flash_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->flash_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->flash_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
     g_signal_connect_object(self->delay_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->eeprom_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->eeprom_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->extend_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->eeprom_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->eeprom_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->extend_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+                            G_CONNECT_DEFAULT);
 
-    g_signal_connect_object(self->voltage_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->algorithm_selector, "notify::selected-item", G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->voltage_selector, "notify::selected-item",
+                            G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->class_selector, "notify::selected-item",
+                            G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(self->algorithm_selector, "notify::selected-item",
+                            G_CALLBACK(any_drop_down_selection_changed_cb), self, G_CONNECT_DEFAULT);
 
     g_signal_connect_object(self, "realize", G_CALLBACK(dialog_chips_editor_realize), self, G_CONNECT_DEFAULT);
 }
