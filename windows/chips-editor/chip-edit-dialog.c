@@ -30,6 +30,8 @@ struct _DialogChipsEdit {
 
 G_DEFINE_FINAL_TYPE(DialogChipsEdit, dialog_chips_edit, ADW_TYPE_DIALOG)
 
+typedef void (*unsaved_alert_cb)(DialogChipsEdit *dce);
+
 static void
 setup_algorithm_selector(GtkDropDown *selector, uint8_t clazz, uint8_t algorithm) {
     if (clazz > 4) {
@@ -49,10 +51,9 @@ setup_algorithm_selector(GtkDropDown *selector, uint8_t clazz, uint8_t algorithm
 }
 
 static void
-chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user_data) {
-    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+update_widget_values(DialogChipsEdit *dce) {
     ezp_chip_data *data = &chips_data_repository_get_chips(dce->repo).data[dce->current_index];
-
+    //TODO: check index and make prev/next insensitive if needed
     char full_name[48];
     strlcpy(full_name, data->name, 48);
     char *type;
@@ -82,7 +83,12 @@ chips_list_changed_cb(ChipsDataRepository *repo, chips_list *list, gpointer user
     gtk_spin_button_set_value(dce->extend_selector, data->extend);
 
     dce->has_unsaved_changes = false;
-    adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor"));
+    adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
+}
+
+static void
+chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, G_GNUC_UNUSED chips_list *list, gpointer user_data) {
+    update_widget_values(EZP_DIALOG_CHIPS_EDIT(user_data));
 }
 
 static gboolean
@@ -123,8 +129,51 @@ chip_data_from_widgets(DialogChipsEdit *self, ezp_chip_data *data) {
 }
 
 static void
-save_btn_click_cb(GtkButton *btn, gpointer user_data) {
-    DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
+unsaved_alert_response_cb(AdwAlertDialog *self, gchar *response, gpointer user_data) {
+    void **pointers = user_data;
+    unsaved_alert_cb discard = pointers[0];
+    unsaved_alert_cb save = pointers[1];
+    DialogChipsEdit *dce = pointers[2];
+    if (!strcmp(response, "discard")) {
+        if (discard) discard(dce);
+    } else if (!strcmp(response, "save")) {
+        if (save) save(dce);
+    }
+    g_free(user_data);
+}
+
+static void
+check_unsaved(DialogChipsEdit *dce, unsaved_alert_cb discard_cb, unsaved_alert_cb save_cb) {
+    if (dce->has_unsaved_changes) {
+        AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Save changes?"),
+                                                                      gettext("Current chip has unsaved changes. Changes which are not saved will be permanently lost.")));
+
+        adw_alert_dialog_add_responses(alert,
+                                       "cancel", gettext("_Cancel"),
+                                       "discard", gettext("_Discard"),
+                                       "save", gettext("S_ave"), NULL);
+
+        adw_alert_dialog_set_response_appearance(alert, "cancel", ADW_RESPONSE_DEFAULT);
+        adw_alert_dialog_set_response_appearance(alert, "discard", ADW_RESPONSE_DESTRUCTIVE);
+        adw_alert_dialog_set_response_appearance(alert, "save", ADW_RESPONSE_SUGGESTED);
+
+        adw_alert_dialog_set_default_response(alert, "cancel");
+        adw_alert_dialog_set_close_response(alert, "cancel");
+
+        void **pointers = g_malloc(sizeof(void*) * 3);
+        pointers[0] = discard_cb;
+        pointers[1] = save_cb;
+        pointers[2] = dce;
+        g_signal_connect(alert, "response", G_CALLBACK(unsaved_alert_response_cb), pointers);
+
+        adw_dialog_present(ADW_DIALOG(alert), GTK_WIDGET(dce));
+    } else {
+        if (discard_cb) discard_cb(dce);
+    }
+}
+
+static void
+save_chip(DialogChipsEdit *dce) {
     ezp_chip_data data;
     gboolean ret = chip_data_from_widgets(dce, &data);
     printf("chip_data_from_widgets returned %d\n", ret);
@@ -133,21 +182,62 @@ save_btn_click_cb(GtkButton *btn, gpointer user_data) {
         chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
         if (dce->has_unsaved_changes) {
             dce->has_unsaved_changes = false;
-            adw_dialog_set_title(ADW_DIALOG(user_data), gettext("Chips editor"));
+            adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
         }
     }
 }
 
 static void
+save_btn_click_cb(GtkButton *btn, gpointer user_data) {
+    save_chip(EZP_DIALOG_CHIPS_EDIT(user_data));
+}
+
+static void
+discard_and_go_prev(DialogChipsEdit *dce) {
+    chips_list list = chips_data_repository_get_chips(dce->repo);
+    int count = list.length;
+    if (dce->current_index > 0) {
+        dce->current_index--;
+    }
+    //TODO: make opposite button sensitive
+    gtk_widget_set_sensitive(GTK_WIDGET(dce->prev_btn), dce->current_index != 0);
+    update_widget_values(dce);
+}
+
+static void
+save_and_go_prev(DialogChipsEdit *dce) {
+    save_chip(dce);
+    discard_and_go_prev(dce);
+}
+
+static void
 prev_btn_click_cb(GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
-    //TODO: check unsaved changes
+    check_unsaved(dce, discard_and_go_prev, save_and_go_prev);
+}
+
+static void
+discard_and_go_next(DialogChipsEdit *dce) {
+    chips_list list = chips_data_repository_get_chips(dce->repo);
+    int count = list.length;
+    if (dce->current_index < count - 1) {
+        dce->current_index++;
+    }
+    //TODO: make opposite button sensitive
+    gtk_widget_set_sensitive(GTK_WIDGET(dce->next_btn), dce->current_index != count - 1);
+    update_widget_values(dce);
+}
+
+static void
+save_and_go_next(DialogChipsEdit *dce) {
+    save_chip(dce);
+    discard_and_go_next(dce);
 }
 
 static void
 next_btn_click_cb(GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
-    //TODO: check unsaved changes
+    check_unsaved(dce, discard_and_go_next, save_and_go_next);
 }
 
 static void
@@ -201,40 +291,15 @@ dialog_chips_editor_realize(GtkWidget *self, gpointer user_data) {
 }
 
 static void
-unsaved_alert_response_cb(AdwAlertDialog *self, gchar *response, gpointer user_data) {
-    if (!strcmp(response, "discard")) {
-        adw_dialog_force_close(ADW_DIALOG(user_data));
-    } else if (!strcmp(response, "save")) {
-        save_btn_click_cb(NULL, user_data);
-        adw_dialog_force_close(ADW_DIALOG(user_data));
-    }
+save_and_close(DialogChipsEdit *dce) {
+    save_chip(dce);
+    adw_dialog_force_close(ADW_DIALOG(dce));
 }
 
 static void
 chip_edit_dialog_close_attempt(AdwDialog *dialog) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(dialog);
-    if (dce->has_unsaved_changes) {
-        AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Save changes?"),
-                                                                      gettext("Current chip has unsaved changes. Changes which are not saved will be permanently lost.")));
-
-        adw_alert_dialog_add_responses(alert,
-                                       "cancel", gettext("_Cancel"),
-                                       "discard", gettext("_Discard"),
-                                       "save", gettext("S_ave"), NULL);
-
-        adw_alert_dialog_set_response_appearance(alert, "cancel", ADW_RESPONSE_DEFAULT);
-        adw_alert_dialog_set_response_appearance(alert, "discard", ADW_RESPONSE_DESTRUCTIVE);
-        adw_alert_dialog_set_response_appearance(alert, "save", ADW_RESPONSE_SUGGESTED);
-
-        adw_alert_dialog_set_default_response(alert, "cancel");
-        adw_alert_dialog_set_close_response(alert, "cancel");
-
-        g_signal_connect(alert, "response", G_CALLBACK(unsaved_alert_response_cb), dialog);
-
-        adw_dialog_present(ADW_DIALOG(alert), GTK_WIDGET(dialog));
-    } else {
-        adw_dialog_force_close(dialog);
-    }
+    check_unsaved(dce, (unsaved_alert_cb) adw_dialog_force_close, save_and_close);
 }
 
 static void
