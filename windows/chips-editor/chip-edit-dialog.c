@@ -25,6 +25,7 @@ struct _DialogChipsEdit {
 
     ChipsDataRepository *repo;
     guint current_index;
+    guint last_index;
     gboolean has_unsaved_changes;
 };
 
@@ -51,9 +52,17 @@ setup_algorithm_selector(GtkDropDown *selector, uint8_t clazz, uint8_t algorithm
 }
 
 static void
+set_navigation_buttons_sensitivity(DialogChipsEdit *dce) {
+    gtk_widget_set_sensitive(GTK_WIDGET(dce->prev_btn), dce->current_index > 0);
+    gtk_widget_set_sensitive(GTK_WIDGET(dce->next_btn), dce->current_index < dce->last_index);
+}
+
+static void
 update_widget_values(DialogChipsEdit *dce) {
-    ezp_chip_data *data = &chips_data_repository_get_chips(dce->repo).data[dce->current_index];
-    //TODO: check index and make prev/next insensitive if needed
+    chips_list list = chips_data_repository_get_chips(dce->repo);
+    if (list.length == 0) return;
+    dce->last_index = list.length - 1;
+    ezp_chip_data *data = &list.data[dce->current_index];
     char full_name[48];
     strlcpy(full_name, data->name, 48);
     char *type;
@@ -84,6 +93,8 @@ update_widget_values(DialogChipsEdit *dce) {
 
     dce->has_unsaved_changes = false;
     adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
+
+    set_navigation_buttons_sensitivity(dce);
 }
 
 static void
@@ -194,13 +205,9 @@ save_btn_click_cb(GtkButton *btn, gpointer user_data) {
 
 static void
 discard_and_go_prev(DialogChipsEdit *dce) {
-    chips_list list = chips_data_repository_get_chips(dce->repo);
-    int count = list.length;
     if (dce->current_index > 0) {
         dce->current_index--;
     }
-    //TODO: make opposite button sensitive
-    gtk_widget_set_sensitive(GTK_WIDGET(dce->prev_btn), dce->current_index != 0);
     update_widget_values(dce);
 }
 
@@ -218,13 +225,9 @@ prev_btn_click_cb(GtkButton *btn, gpointer user_data) {
 
 static void
 discard_and_go_next(DialogChipsEdit *dce) {
-    chips_list list = chips_data_repository_get_chips(dce->repo);
-    int count = list.length;
-    if (dce->current_index < count - 1) {
+    if (dce->current_index < dce->last_index) {
         dce->current_index++;
     }
-    //TODO: make opposite button sensitive
-    gtk_widget_set_sensitive(GTK_WIDGET(dce->next_btn), dce->current_index != count - 1);
     update_widget_values(dce);
 }
 
@@ -382,8 +385,7 @@ dialog_chips_edit_new(ChipsDataRepository *repo, guint open_index) {
     dlg->repo = repo;
     dlg->current_index = open_index;
     g_signal_connect_object(dlg->repo, "chips-list", G_CALLBACK(chips_list_changed_cb), dlg, G_CONNECT_DEFAULT);
-    chips_list list = chips_data_repository_get_chips(repo);
-    chips_list_changed_cb(NULL, &list, dlg);
+    update_widget_values(dlg);
 
     return dlg;
 }
