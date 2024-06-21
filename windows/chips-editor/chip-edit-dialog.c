@@ -140,7 +140,7 @@ chip_data_from_widgets(DialogChipsEdit *self, ezp_chip_data *data) {
 }
 
 static void
-unsaved_alert_response_cb(AdwAlertDialog *self, gchar *response, gpointer user_data) {
+unsaved_alert_response_cb(G_GNUC_UNUSED AdwAlertDialog *self, gchar *response, gpointer user_data) {
     void **pointers = user_data;
     unsaved_alert_cb discard = pointers[0];
     unsaved_alert_cb save = pointers[1];
@@ -199,7 +199,7 @@ save_chip(DialogChipsEdit *dce) {
 }
 
 static void
-save_btn_click_cb(GtkButton *btn, gpointer user_data) {
+save_btn_click_cb(G_GNUC_UNUSED GtkButton *btn, gpointer user_data) {
     save_chip(EZP_DIALOG_CHIPS_EDIT(user_data));
 }
 
@@ -218,7 +218,7 @@ save_and_go_prev(DialogChipsEdit *dce) {
 }
 
 static void
-prev_btn_click_cb(GtkButton *btn, gpointer user_data) {
+prev_btn_click_cb(G_GNUC_UNUSED GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     check_unsaved(dce, discard_and_go_prev, save_and_go_prev);
 }
@@ -238,13 +238,13 @@ save_and_go_next(DialogChipsEdit *dce) {
 }
 
 static void
-next_btn_click_cb(GtkButton *btn, gpointer user_data) {
+next_btn_click_cb(G_GNUC_UNUSED GtkButton *btn, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     check_unsaved(dce, discard_and_go_next, save_and_go_next);
 }
 
 static void
-chip_id_text_changed(GtkEditable *self, gpointer user_data) {
+chip_id_text_changed(GtkEditable *self, G_GNUC_UNUSED gpointer user_data) {
     const char *chip_id_str = gtk_entry_get_text(GTK_ENTRY(self));
     if (strlen(chip_id_str) > 10 ||
         !g_regex_match_simple("^0x[\\da-fA-F]+$", chip_id_str, G_REGEX_DEFAULT, G_REGEX_MATCH_DEFAULT)) {
@@ -261,7 +261,7 @@ class_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value,
 }
 
 static void
-any_entry_changed_cb(GtkEditable *self, gpointer user_data) {
+any_entry_changed_cb(G_GNUC_UNUSED GtkEditable *self, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     if (!dce->has_unsaved_changes) {
         dce->has_unsaved_changes = true;
@@ -270,7 +270,7 @@ any_entry_changed_cb(GtkEditable *self, gpointer user_data) {
 }
 
 static void
-any_drop_down_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
+any_drop_down_selection_changed_cb(G_GNUC_UNUSED GtkDropDown *self, G_GNUC_UNUSED gpointer *new_value, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     if (!dce->has_unsaved_changes) {
         dce->has_unsaved_changes = true;
@@ -279,7 +279,7 @@ any_drop_down_selection_changed_cb(GtkDropDown *self, G_GNUC_UNUSED gpointer *ne
 }
 
 static void
-dialog_chips_editor_realize(GtkWidget *self, gpointer user_data) {
+dialog_chips_editor_realize(G_GNUC_UNUSED GtkWidget *self, gpointer user_data) {
     DialogChipsEdit *dce = EZP_DIALOG_CHIPS_EDIT(user_data);
     ////////////ATTENTION! SHIT CODE BEGIN!//////////////////////
     //remove this fix and other related stuff when libadwaita will be fixed

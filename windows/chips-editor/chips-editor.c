@@ -55,7 +55,7 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list,
 }
 
 static void
-chips_list_activate_cb(GtkColumnView *self, guint position, gpointer user_data) {
+chips_list_activate_cb(G_GNUC_UNUSED GtkColumnView *self, guint position, gpointer user_data) {
     WindowChipsEditor *sce = EZP_WINDOW_CHIPS_EDITOR(user_data);
     DialogChipsEdit *dlg = dialog_chips_edit_new(sce->repo, position);
     adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(sce));
