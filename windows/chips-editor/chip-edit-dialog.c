@@ -350,18 +350,19 @@ dialog_chips_edit_init(DialogChipsEdit *self) {
     g_signal_connect_object(self->type_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->manuf_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->name_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->chip_id_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->flash_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->flash_size_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->flash_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->flash_page_size_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->delay_selector, "changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->eeprom_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->delay_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->eeprom_size_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->eeprom_page_size_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->eeprom_page_size_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->extend_selector, "changed", G_CALLBACK(any_entry_changed_cb), self,
+    g_signal_connect_object(gtk_spin_button_get_adjustment(self->extend_selector), "value-changed", G_CALLBACK(any_entry_changed_cb), self,
                             G_CONNECT_DEFAULT);
 
     g_signal_connect_object(self->voltage_selector, "notify::selected-item",
