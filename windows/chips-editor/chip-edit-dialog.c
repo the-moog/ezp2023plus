@@ -166,15 +166,23 @@ check_unsaved(DialogChipsEdit *dce, unsaved_alert_cb discard_cb, unsaved_alert_c
     }
 }
 
-static void
+static gboolean
 save_chip(DialogChipsEdit *dce) {
     ezp_chip_data data;
     chip_data_from_widgets(dce, &data);
     chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
+    if (chips_data_repository_save(dce->repo)) {
+        AdwAlertDialog *dlg = ADW_ALERT_DIALOG(
+                adw_alert_dialog_new(gettext("Error!"), gettext("Changes can't be saved: IO error")));
+        adw_alert_dialog_add_response(dlg, "ok", gettext("Ok"));
+        adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(dce));
+        return false;
+    }
     if (dce->has_unsaved_changes) {
         dce->has_unsaved_changes = false;
         adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
     }
+    return true;
 }
 
 static void
@@ -192,7 +200,7 @@ discard_and_go_prev(DialogChipsEdit *dce) {
 
 static void
 save_and_go_prev(DialogChipsEdit *dce) {
-    save_chip(dce);
+    if (!save_chip(dce)) return;
     discard_and_go_prev(dce);
 }
 
@@ -212,7 +220,7 @@ discard_and_go_next(DialogChipsEdit *dce) {
 
 static void
 save_and_go_next(DialogChipsEdit *dce) {
-    save_chip(dce);
+    if (!save_chip(dce)) return;
     discard_and_go_next(dce);
 }
 
@@ -274,7 +282,7 @@ dialog_chips_editor_realize(G_GNUC_UNUSED GtkWidget *self, gpointer user_data) {
 
 static void
 save_and_close(DialogChipsEdit *dce) {
-    save_chip(dce);
+    if (!save_chip(dce)) return;
     adw_dialog_force_close(ADW_DIALOG(dce));
 }
 

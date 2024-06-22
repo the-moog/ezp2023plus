@@ -40,6 +40,5 @@ Work in progress
 - flash size override from main window
 - erase (not implemented in libezp2023plus)
 - translations
-- saving chip editor changes into a file
 - windows build
 - make functions that return -1 or 0 return gboolean
