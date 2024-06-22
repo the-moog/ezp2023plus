@@ -80,9 +80,16 @@
                                                     </object>
                                                 </child>
                                                 <child>
-                                                    <object class="GtkEntry" id="chip_id_selector">
-                                                        <property name="placeholder-text">Chip ID</property>
-                                                        <property name="max-length">10</property>
+                                                    <object class="GtkSpinButton" id="chip_id_selector">
+                                                        <property name="name">chip_id_selector</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="lower">0</property>
+                                                                <property name="upper">4294967295</property>
+                                                                <property name="step-increment">1</property>
+                                                            </object>
+                                                        </property>
+                                                        <property name="snap-to-ticks">True</property>
                                                     </object>
                                                 </child>
                                                 <child>

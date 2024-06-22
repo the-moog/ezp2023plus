@@ -9,7 +9,7 @@ struct _DialogChipsEdit {
     GtkEntry *type_selector;
     GtkEntry *manuf_selector;
     GtkEntry *name_selector;
-    GtkEntry *chip_id_selector;
+    GtkSpinButton *chip_id_selector;
     GtkSpinButton *flash_size_selector;
     GtkSpinButton *flash_page_size_selector;
     GtkDropDown *voltage_selector;
@@ -76,16 +76,12 @@ update_widget_values(DialogChipsEdit *dce) {
     gtk_entry_set_text(dce->manuf_selector, manuf);
     gtk_entry_set_text(dce->name_selector, name);
 
-    char chip_id[11];
-    snprintf(chip_id, 11, "0x%x", data->chip_id);
-    gtk_entry_set_text(dce->chip_id_selector, chip_id);
-
-    setup_algorithm_selector(dce->algorithm_selector, data->clazz, data->algorithm);
-
+    gtk_spin_button_set_value(dce->chip_id_selector, data->chip_id);
     gtk_spin_button_set_value(dce->flash_size_selector, data->flash);
     gtk_spin_button_set_value(dce->flash_page_size_selector, data->flash_page);
     gtk_drop_down_set_selected(dce->voltage_selector, data->voltage);
     gtk_drop_down_set_selected(dce->class_selector, data->clazz);
+    setup_algorithm_selector(dce->algorithm_selector, data->clazz, data->algorithm);
     gtk_spin_button_set_value(dce->delay_selector, data->delay);
     gtk_spin_button_set_value(dce->eeprom_size_selector, data->eeprom);
     gtk_spin_button_set_value(dce->eeprom_page_size_selector, data->eeprom_page);
@@ -114,13 +110,9 @@ chip_data_from_widgets(DialogChipsEdit *self, ezp_chip_data *data) {
     const char *name = gtk_entry_get_text(self->name_selector);
 //    if (strlen(name) > 15) return false;
 
-    const char *chip_id_str = gtk_entry_get_text(self->chip_id_selector);
-    if (strlen(chip_id_str) > 10) return false;
-    if (!g_regex_match_simple("^0x[\\da-fA-F]+$", chip_id_str, G_REGEX_DEFAULT, G_REGEX_MATCH_DEFAULT)) return false;
-
     //set values
     snprintf(data->name, 48, "%s,%s,%s", type, manuf, name);
-    data->chip_id = strtol(chip_id_str, NULL, 16);
+    data->chip_id = gtk_spin_button_get_value_as_int(self->chip_id_selector);
     data->clazz = gtk_drop_down_get_selected(self->class_selector);
 
     data->algorithm = gtk_drop_down_get_selected(self->algorithm_selector);
@@ -305,6 +297,15 @@ chip_edit_dialog_close_attempt(AdwDialog *dialog) {
     check_unsaved(dce, (unsaved_alert_cb) adw_dialog_force_close, save_and_close);
 }
 
+static gboolean
+chip_id_selector_output_cb(GtkSpinButton *spin_button, G_GNUC_UNUSED gpointer user_data) {
+    guint value = gtk_spin_button_get_value_as_int(spin_button);
+    gchar *text = g_strdup_printf("0x%x", value);
+    gtk_editable_set_text(GTK_EDITABLE(spin_button), text);
+    g_free(text);
+    return TRUE;
+}
+
 static void
 dialog_chips_edit_class_init(DialogChipsEditClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -343,11 +344,11 @@ dialog_chips_edit_init(DialogChipsEdit *self) {
     disable_scroll_for(GTK_WIDGET(self->eeprom_page_size_selector));
     disable_scroll_for(GTK_WIDGET(self->extend_selector));
 
+    g_signal_connect(self->chip_id_selector, "output", G_CALLBACK(chip_id_selector_output_cb), NULL);
+
     g_signal_connect_object(self->save_btn, "clicked", G_CALLBACK(save_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->prev_btn, "clicked", G_CALLBACK(prev_btn_click_cb), self, G_CONNECT_DEFAULT);
     g_signal_connect_object(self->next_btn, "clicked", G_CALLBACK(next_btn_click_cb), self, G_CONNECT_DEFAULT);
-    g_signal_connect_object(self->chip_id_selector, "changed", G_CALLBACK(chip_id_text_changed), NULL,
-                            G_CONNECT_DEFAULT);
     g_signal_connect_object(self->class_selector, "notify::selected-item", G_CALLBACK(class_selection_changed_cb), self,
                             G_CONNECT_DEFAULT);
 

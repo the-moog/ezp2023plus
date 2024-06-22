@@ -41,6 +41,4 @@ Work in progress
 - erase (not implemented in libezp2023plus)
 - translations
 - saving chip editor changes into a file
-- deactivate save button if chip_id is invalid
-- prev/next switching in chip editor
 - windows build
