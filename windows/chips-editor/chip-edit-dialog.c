@@ -60,7 +60,7 @@ set_navigation_buttons_sensitivity(DialogChipsEdit *dce) {
 static void
 update_widget_values(DialogChipsEdit *dce) {
     chips_list list = chips_data_repository_get_chips(dce->repo);
-    if (list.length == 0) return;
+    if (list.length == 0 || dce->current_index >= (guint) list.length) return;
     dce->last_index = list.length - 1;
     ezp_chip_data *data = &list.data[dce->current_index];
     char full_name[48];
@@ -69,8 +69,7 @@ update_widget_values(DialogChipsEdit *dce) {
     char *manuf;
     char *name;
     if (parseName(full_name, &type, &manuf, &name)) {
-        strcpy(full_name, "Error!");
-        type = manuf = name = full_name;
+        return;
     }
     gtk_entry_set_text(dce->type_selector, type);
     gtk_entry_set_text(dce->manuf_selector, manuf);
@@ -98,20 +97,13 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, G_GNUC_UNUSED chi
     update_widget_values(EZP_DIALOG_CHIPS_EDIT(user_data));
 }
 
-static gboolean
+static void
 chip_data_from_widgets(DialogChipsEdit *self, ezp_chip_data *data) {
-    //check all that may be invalid
     const char *type = gtk_entry_get_text(self->type_selector);
-//    if (strlen(type) > 15) return false;
-
     const char *manuf = gtk_entry_get_text(self->manuf_selector);
-//    if (strlen(manuf) > 15) return false;
-
     const char *name = gtk_entry_get_text(self->name_selector);
-//    if (strlen(name) > 15) return false;
-
-    //set values
     snprintf(data->name, 48, "%s,%s,%s", type, manuf, name);
+
     data->chip_id = gtk_spin_button_get_value_as_int(self->chip_id_selector);
     data->clazz = gtk_drop_down_get_selected(self->class_selector);
 
@@ -128,7 +120,6 @@ chip_data_from_widgets(DialogChipsEdit *self, ezp_chip_data *data) {
     data->eeprom = gtk_spin_button_get_value_as_int(self->eeprom_size_selector);
     data->eeprom_page = gtk_spin_button_get_value_as_int(self->eeprom_page_size_selector);
     data->extend = gtk_spin_button_get_value_as_int(self->extend_selector);
-    return true;
 }
 
 static void
@@ -178,15 +169,11 @@ check_unsaved(DialogChipsEdit *dce, unsaved_alert_cb discard_cb, unsaved_alert_c
 static void
 save_chip(DialogChipsEdit *dce) {
     ezp_chip_data data;
-    gboolean ret = chip_data_from_widgets(dce, &data);
-    printf("chip_data_from_widgets returned %d\n", ret);
-    if (ret) {
-        //TODO: check return value
-        chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
-        if (dce->has_unsaved_changes) {
-            dce->has_unsaved_changes = false;
-            adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
-        }
+    chip_data_from_widgets(dce, &data);
+    chips_data_repository_edit(dce->repo, (int) dce->current_index, &data);
+    if (dce->has_unsaved_changes) {
+        dce->has_unsaved_changes = false;
+        adw_dialog_set_title(ADW_DIALOG(dce), gettext("Chips editor"));
     }
 }
 

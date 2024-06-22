@@ -42,3 +42,4 @@ Work in progress
 - translations
 - saving chip editor changes into a file
 - windows build
+- make functions that return -1 or 0 return gboolean
