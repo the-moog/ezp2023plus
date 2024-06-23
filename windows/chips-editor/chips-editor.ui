@@ -14,6 +14,20 @@
                 <property name="height-request">480</property>
                 <child type="top">
                     <object class="AdwHeaderBar">
+                        <child type="start">
+                            <object class="GtkBox">
+                                <property name="halign">start</property>
+                                <property name="spacing">6</property>
+                                <child>
+                                    <object class="GtkButton" id="add_chip_button">
+                                        <property name="action-name">win.add-chip</property>
+                                        <property name="icon-name">list-add</property>
+                                        <property name="has-tooltip">true</property>
+                                        <property name="tooltip-text" translatable="yes">Add chip</property>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
                         <child type="end">
                             <object class="GtkBox" id="button_box">
                                 <property name="orientation">horizontal</property>

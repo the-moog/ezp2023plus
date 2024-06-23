@@ -19,6 +19,22 @@ struct _WindowChipsEditor {
 G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 
 static void
+add_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
+    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(widget);
+    ezp_chip_data new = {"FLASH_TYPE,MANUFACTURER,NAME", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    chips_data_repository_add(wce->repo, &new);
+    if (chips_data_repository_save(wce->repo) != 0) {
+        AdwAlertDialog *dlg = ADW_ALERT_DIALOG(
+                adw_alert_dialog_new(gettext("Error!"), gettext("Changes can't be saved: IO error")));
+        adw_alert_dialog_add_response(dlg, "ok", gettext("Ok"));
+        adw_dialog_present(ADW_DIALOG(dlg), widget);
+        return;
+    }
+    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, chips_data_repository_get_chips(wce->repo).length - 1);
+    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(wce));
+}
+
+static void
 window_chips_editor_class_init(WindowChipsEditorClass *klass) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
@@ -29,6 +45,10 @@ window_chips_editor_class_init(WindowChipsEditorClass *klass) {
     gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, search_button);
     gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_searchbar);
     gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_searchentry);
+
+    gtk_widget_class_install_action(widget_class, "win.add-chip", NULL, add_chip);
+
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_n, GDK_CONTROL_MASK, "win.add-chip", NULL);
 }
 
 static void
@@ -52,9 +72,9 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list,
 
 static void
 chips_list_activate_cb(G_GNUC_UNUSED GtkColumnView *self, guint position, gpointer user_data) {
-    WindowChipsEditor *sce = EZP_WINDOW_CHIPS_EDITOR(user_data);
-    DialogChipsEdit *dlg = dialog_chips_edit_new(sce->repo, position);
-    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(sce));
+    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(user_data);
+    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, position);
+    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(wce));
 }
 
 static void

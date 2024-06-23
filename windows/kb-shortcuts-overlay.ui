@@ -63,6 +63,17 @@
                         </child>
                     </object>
                 </child>
+                <child>
+                    <object class="GtkShortcutsGroup">
+                        <property name="title" translatable="yes" context="shortcut window">Chips editor</property>
+                        <child>
+                            <object class="GtkShortcutsShortcut">
+                                <property name="accelerator">&lt;ctrl&gt;n</property>
+                                <property name="title" translatable="yes" context="shortcut window">Add new chip</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
             </object>
         </child>
     </object>
