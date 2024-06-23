@@ -43,14 +43,10 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list,
     WindowChipsEditor *self = user_data;
 
     g_list_store_remove_all(self->store);
-    if (list->length > 0) {
-        for (int i = 0; i < list->length; ++i) {
-            ChipsEditorListRow *row = chips_editor_list_row_new(&list->data[i]);
-            g_list_store_append(self->store, row);
-            g_object_unref(row);
-        }
-    } else {
-        g_warning("list length is %d\n", list->length);
+    for (size_t i = 0; i < list->length; ++i) {
+        ChipsEditorListRow *row = chips_editor_list_row_new(&list->data[i]);
+        g_list_store_append(self->store, row);
+        g_object_unref(row);
     }
 }
 

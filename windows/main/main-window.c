@@ -745,7 +745,7 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *data,
     GTree *names = g_tree_new_full(string_key_compare, NULL, destroy_string,
                                    destroy_strings_g_list); //key is "type,manuf" stores lists with names for each manufacturer
 
-    for (int i = 0; i < data->length; ++i) {
+    for (size_t i = 0; i < data->length; ++i) {
         char nm_cp[48];
         strlcpy(nm_cp, chips[i].name, 48);
 
