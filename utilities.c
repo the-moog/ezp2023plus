@@ -17,8 +17,8 @@ const char *algorithms_for_spi[] = {
 };
 
 const char *algorithms_for_24_eeprom[] = {
-        "less than 4KiB",
-        "greater or equal to 4KiB",
+        "< 4KiB",
+        "≥ 4KiB",
         NULL
 };
 
@@ -37,9 +37,9 @@ const char *algorithms_for_93_eeprom[] = {
 };
 
 const char *algorithms_for_25_95_eeprom[] = {
-        "less than 512B",
-        "greater or equal to 512B",
-        "greater than 64KiB",
+        "< 512B",
+        "≥ 512B",
+        "> 64KiB",
         NULL
 };
 

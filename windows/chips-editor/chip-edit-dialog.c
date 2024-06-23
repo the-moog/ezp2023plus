@@ -45,7 +45,8 @@ setup_algorithm_selector(GtkDropDown *selector, uint8_t clazz, uint8_t algorithm
     GtkStringList *l = gtk_string_list_new(algorithms_for[clazz]);
     gtk_drop_down_set_model(selector, G_LIST_MODEL(l));
     if (clazz == EEPROM_93) {
-        gtk_drop_down_set_selected(selector, algorithm < 87 ? algorithm - 7 : algorithm - 82);
+        if (algorithm != 0) //look at class_selection_changed_cb. valid algorithm for EEPROM_93 starts with 7
+            gtk_drop_down_set_selected(selector, algorithm < 87 ? algorithm - 7 : algorithm - 82);
     } else {
         gtk_drop_down_set_selected(selector, algorithm);
     }
@@ -332,6 +333,7 @@ static void
 dialog_chips_edit_init(DialogChipsEdit *self) {
     gtk_widget_init_template(GTK_WIDGET (self));
 
+    disable_scroll_for(GTK_WIDGET(self->chip_id_selector));
     disable_scroll_for(GTK_WIDGET(self->flash_size_selector));
     disable_scroll_for(GTK_WIDGET(self->flash_page_size_selector));
     disable_scroll_for(GTK_WIDGET(self->delay_selector));

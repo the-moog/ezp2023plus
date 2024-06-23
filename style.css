@@ -1,29 +1,29 @@
-box > dropdown {
-    margin: 5px 10px 5px 10px;
+#left_panel > dropdown {
+    margin: 6px 12px 6px 12px;
 }
 
-box > entry.search {
-    margin: 5px 10px 5px 10px;
+#left_panel > entry.search {
+    margin: 6px 12px 6px 12px;
 }
 
-box > spinbutton {
-    margin: 5px 10px 5px 10px;
+#left_panel > spinbutton {
+    margin: 6px 12px 6px 12px;
 }
 
 #right_box {
-    padding: 1px 10px 5px 10px;
+    padding: 1px 12px 6px 12px;
 }
 
 #test_button, #read_button {
-    margin: 5px 5px 5px 10px;
+    margin: 6px 6px 6px 12px;
 }
 
 #write_button, #erase_button {
-    margin: 5px 10px 5px 5px;
+    margin: 6px 12px 6px 6px;
 }
 
 #progress_bar {
-    margin: 5px 10px 5px 10px;
+    margin: 6px 12px 6px 12px;
 }
 
 #hex_cursor_frame {
@@ -35,17 +35,17 @@ box > spinbutton {
 }
 
 #vbox > entry {
-    margin: 5px 10px 5px 10px;
+    margin: 5px 0 5px 0;
 }
 
-#vbox > label {
-    margin: 0 10px 0 10px;
+#vbox > spinbutton {
+    margin: 5px 0 5px 0;
+}
+
+#vbox > dropdown {
+    margin: 5px 0 5px 0;
 }
 
 #chip-editor-btn {
-    margin: 10px;
-}
-
-.error {
-    color: red;
+    margin: 12px;
 }

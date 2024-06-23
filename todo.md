@@ -9,10 +9,7 @@
 - packaging
   - build for Windows
   - PKGBUILD for Arch Linux
-- chip-edit-dialog
-  - make chip_id selector insensitive for scrolling
-  - fixed chip editor dlg width
-  - fix algorithm selector when selecting EEPROM_93
 - change file names
   - chips_data_repository -> chips-data-repository
   - gtk_string_list_extension -> gtk-string-list-extension
+- delete debug printf or print in stderr

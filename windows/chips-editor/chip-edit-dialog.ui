@@ -21,9 +21,12 @@
                                 <property name="child">
                                     <object class="GtkBox">
                                         <property name="orientation">horizontal</property>
+                                        <property name="homogeneous">Yes</property>
                                         <child>
                                             <object class="GtkBox">
                                                 <property name="orientation">vertical</property>
+                                                <property name="margin-start">12</property>
+                                                <property name="margin-end">6</property>
                                                 <property name="name">vbox</property>
                                                 <child>
                                                     <object class="GtkLabel">
@@ -167,6 +170,8 @@
                                             <object class="GtkBox">
                                                 <property name="orientation">vertical</property>
                                                 <property name="name">vbox</property>
+                                                <property name="margin-start">6</property>
+                                                <property name="margin-end">12</property>
                                                 <child>
                                                     <object class="GtkLabel">
                                                         <property name="label" translatable="yes">Class</property>
