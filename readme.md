@@ -44,14 +44,3 @@ Software for EZP2023+(and maybe other EZP*) programmer
 ### Install
 
     $ sudo meson install -C buildDir
-
-## TODO list
-- chip search from main window
-- delay override from main window
-- flash size override from main window
-- erase (not implemented in libezp2023plus)
-- translations
-- build for Windows
-- make functions that return -1 or 0 return gboolean
-- adding and deleting chips
-- PKGBUILD for Arch Linux

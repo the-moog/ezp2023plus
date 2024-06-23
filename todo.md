@@ -1,0 +1,23 @@
+## TODO list
+- features
+  - chip search from main window
+  - delay override from main window
+  - flash size override from main window
+  - erase (not implemented in libezp2023plus)
+  - translations
+  - adding and deleting chips
+- packaging
+  - build for Windows
+  - PKGBUILD for Arch Linux
+- chip-edit-dialog
+  - make chip_id selector insensitive for scrolling
+  - fixed chip editor dlg width
+  - fix algorithm selector when selecting EEPROM_93 
+- chips_data_repository
+  - make functions that return -1 or 0 return gboolean
+  - change int to uint
+  - change reallocarray to g_realloc_n
+  - review other code
+- change file names
+  - chips_data_repository -> chips-data-repository
+  - gtk_string_list_extension -> gtk-string-list-extension
