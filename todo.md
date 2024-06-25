@@ -5,8 +5,6 @@
   - flash size override from main window
   - erase (not implemented in libezp2023plus)
   - translations
-  - deleting chips
-  - add F10 into shortcuts 
 - packaging
   - build for Windows
   - PKGBUILD for Arch Linux

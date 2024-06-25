@@ -2,6 +2,14 @@
 <interface>
     <requires lib="gtk" version="4.0"/>
     <requires lib="libadwaita" version="1.0"/>
+    <menu id="chips_list_context_menu_model">
+        <section>
+            <item>
+                <attribute name="label" translatable="yes">_Delete</attribute>
+                <attribute name="action">win.delete-chip</attribute>
+            </item>
+        </section>
+    </menu>
     <template class="WindowChipsEditor" parent="AdwWindow">
         <property name="title" translatable="yes">Chips editor</property>
         <property name="default-width">575</property>
@@ -69,6 +77,12 @@
                                         <property name="show-column-separators">True</property>
                                         <property name="show-row-separators">True</property>
                                         <child>
+                                            <object class="GtkPopoverMenu" id="chips_list_context_menu">
+                                                <property name="position">bottom</property>
+                                                <property name="menu-model">chips_list_context_menu_model</property>
+                                            </object>
+                                        </child>
+                                        <child>
                                             <object class="GtkColumnViewColumn">
                                                 <property name="title" translatable="yes">Type</property>
                                                 <property name="resizable">True</property>
@@ -85,6 +99,11 @@
             <object class="GtkLabel">
                 <binding name="label">
                     <lookup name="flash_type" type="ChipsEditorListRow">
+                        <lookup name="item">GtkListItem</lookup>
+                    </lookup>
+                </binding>
+                <binding name="name">
+                    <lookup name="id" type="ChipsEditorListRow">
                         <lookup name="item">GtkListItem</lookup>
                     </lookup>
                 </binding>

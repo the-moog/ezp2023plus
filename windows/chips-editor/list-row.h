@@ -21,6 +21,9 @@ chips_editor_list_row_set_manufacturer(ChipsEditorListRow *self, const char *man
 void
 chips_editor_list_row_set_name(ChipsEditorListRow *self, const char *name);
 
+void
+chips_editor_list_row_set_id(ChipsEditorListRow *self, const char *id);
+
 const char *
 chips_editor_list_row_get_flash_type(ChipsEditorListRow *self);
 
@@ -59,5 +62,8 @@ chips_editor_list_row_get_eeprom_page_size(ChipsEditorListRow *self);
 
 uint16_t
 chips_editor_list_row_get_extend(ChipsEditorListRow *self);
+
+const char *
+chips_editor_list_row_get_id(ChipsEditorListRow *self);
 
 G_END_DECLS

@@ -18,6 +18,7 @@ struct _ChipsEditorListRow {
     uint16_t eeprom;
     uint8_t eeprom_page;
     uint8_t voltage;
+    char id[7];
 };
 
 G_DEFINE_FINAL_TYPE(ChipsEditorListRow, chips_editor_list_row, G_TYPE_OBJECT)
@@ -37,6 +38,7 @@ enum {
     PROP_EEPROM_SIZE,
     PROP_EEPROM_PAGE,
     PROP_EXTEND,
+    PROP_ID,
     LAST_PROP,
 };
 
@@ -108,6 +110,9 @@ chips_editor_list_row_get_property(GObject *object, guint prop_id, GValue *value
             sprintf(sprintf_buffer, "%d", self->extend);
             g_value_set_string(value, sprintf_buffer);
             break;
+        case PROP_ID:
+            g_value_set_string(value, self->id);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
     }
@@ -137,6 +142,7 @@ chips_editor_list_row_class_init(ChipsEditorListRowClass *klass) {
     props[PROP_EEPROM_SIZE] = g_param_spec_string("eeprom_size", NULL, NULL, "default", G_PARAM_READABLE);
     props[PROP_EEPROM_PAGE] = g_param_spec_string("eeprom_page", NULL, NULL, "default", G_PARAM_READABLE);
     props[PROP_EXTEND] = g_param_spec_string("extend", NULL, NULL, "default", G_PARAM_READABLE);
+    props[PROP_ID] = g_param_spec_string("id", NULL, NULL, "noid", G_PARAM_READABLE);
     g_object_class_install_properties(object_class, LAST_PROP, props);
 }
 
@@ -187,6 +193,11 @@ chips_editor_list_row_set_manufacturer(ChipsEditorListRow *self, const char *man
 void
 chips_editor_list_row_set_name(ChipsEditorListRow *self, const char *name) {
     strlcpy(self->name, name, 48);
+}
+
+void
+chips_editor_list_row_set_id(ChipsEditorListRow *self, const char *id) {
+    strlcpy(self->id, id, 7);
 }
 
 const char *
@@ -252,4 +263,9 @@ chips_editor_list_row_get_eeprom_page_size(ChipsEditorListRow *self) {
 uint16_t
 chips_editor_list_row_get_extend(ChipsEditorListRow *self) {
     return self->extend;
+}
+
+const char *
+chips_editor_list_row_get_id(ChipsEditorListRow *self) {
+    return self->id;
 }
