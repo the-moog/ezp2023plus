@@ -37,39 +37,39 @@ add_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED
 
 static void
 delete_chip_alert_response_cb(G_GNUC_UNUSED AdwAlertDialog *self, gchar *response, gpointer user_data) {
-    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(user_data);
+    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR((gpointer) ((uint64_t *) user_data)[0]);
     if (!strcmp(response, "yes")) {
-        //get full list
-        GListModel *chips = G_LIST_MODEL(wce->store);
-
-        //get selected item
-        GListModel *filtered_list = G_LIST_MODEL(gtk_column_view_get_model(wce->chips_list));
-        GtkBitset *selection = gtk_selection_model_get_selection(GTK_SELECTION_MODEL(filtered_list));
-        guint pos_in_filtered_list = gtk_bitset_get_minimum(selection);
-        gpointer row = g_list_model_get_item(filtered_list, pos_in_filtered_list);
-
-        //find selected item position in full list
-        guint pos = 0;
-        for (guint i = 0; i < g_list_model_get_n_items(chips); ++i) {
-            if (g_list_model_get_item(chips, i) == row) {
-                pos = i;
-                break;
-            }
-        }
-
-        //delete item from repository by position
-        chips_data_repository_delete(wce->repo, pos);
-
-        //save file
+        chips_data_repository_delete(wce->repo, ((uint64_t*) user_data)[1]);
         chips_data_repository_save(wce->repo);
     }
+    g_free(user_data);
 }
 
 static void
 delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(widget);
-    AdwAlertDialog *alert = ADW_ALERT_DIALOG( //TODO: write good alert title and body
-            adw_alert_dialog_new(gettext("Delete chip?"), gettext("Do you want to delete chip?")));
+
+    //get selected row model from filtered list
+    GListModel *filtered_list = G_LIST_MODEL(gtk_column_view_get_model(wce->chips_list));
+    GtkBitset *selection = gtk_selection_model_get_selection(GTK_SELECTION_MODEL(filtered_list));
+    guint pos_in_filtered_list = gtk_bitset_get_minimum(selection);
+    gtk_bitset_unref(selection);
+    gpointer row = g_list_model_get_item(filtered_list, pos_in_filtered_list);
+
+    //find selected row position in full list
+    GListModel *chips = G_LIST_MODEL(wce->store);
+    guint pos = 0;
+    for (guint i = 0; i < g_list_model_get_n_items(chips); ++i) {
+        if (g_list_model_get_item(chips, i) == row) {
+            pos = i;
+            break;
+        }
+    }
+
+    gchar *alert_body = g_strdup_printf(gettext("%s will be deleted. This operation cannot be undone."),
+                                        chips_data_repository_get_chips(wce->repo).data[pos].name);
+    AdwAlertDialog *alert = ADW_ALERT_DIALOG(adw_alert_dialog_new(gettext("Do you want to delete chip?"), alert_body));
+    g_free(alert_body);
 
     adw_alert_dialog_add_responses(alert,
                                    "no", gettext("_No"),
@@ -77,9 +77,15 @@ delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNU
 
     adw_alert_dialog_set_response_appearance(alert, "no", ADW_RESPONSE_DEFAULT);
     adw_alert_dialog_set_response_appearance(alert, "yes", ADW_RESPONSE_DESTRUCTIVE);
+
     adw_alert_dialog_set_default_response(alert, "no");
     adw_alert_dialog_set_close_response(alert, "no");
-    g_signal_connect(alert, "response", G_CALLBACK(delete_chip_alert_response_cb), wce);
+
+    uint64_t *params = g_malloc(sizeof(uint64_t ) * 2);
+    params[0] = (uint64_t) wce;
+    params[1] = pos;
+    g_signal_connect(alert, "response", G_CALLBACK(delete_chip_alert_response_cb), params);
+
     adw_dialog_present(ADW_DIALOG(alert), GTK_WIDGET(wce));
 }
 
