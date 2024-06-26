@@ -71,9 +71,9 @@ app_sources = [
     'windows/chips-editor/list-row.c',
     'main.c',
     'windows/main/main-window.c',
-    'chips_data_repository.c',
+    'chips-data-repository.c',
     'utilities.c',
-    'gtk_string_list_extension.c',
+    'gtk-string-list-extension.c',
     app_config_h,
 ]
 

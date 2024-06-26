@@ -1,4 +1,4 @@
-#include "gtk_string_list_extension.h"
+#include "gtk-string-list-extension.h"
 
 size_t gtk_string_list_size(GtkStringList *self) {
     for (int i = 0;; ++i) {

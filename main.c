@@ -7,7 +7,7 @@
 
 #include "windows/chips-editor/chips-editor.h"
 #include "windows/main/main-window.h"
-#include "chips_data_repository.h"
+#include "chips-data-repository.h"
 
 ChipsDataRepository *repo;
 

@@ -8,7 +8,4 @@
 - packaging
   - build for Windows
   - PKGBUILD for Arch Linux
-- change file names
-  - chips_data_repository -> chips-data-repository
-  - gtk_string_list_extension -> gtk-string-list-extension
 - delete debug printf or print in stderr

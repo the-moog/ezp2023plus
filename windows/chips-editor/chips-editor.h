@@ -1,7 +1,7 @@
 #pragma once
 
 #include <adwaita.h>
-#include "chips_data_repository.h"
+#include "chips-data-repository.h"
 
 G_BEGIN_DECLS
 

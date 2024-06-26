@@ -1,4 +1,4 @@
-#include "chips_data_repository.h"
+#include "chips-data-repository.h"
 
 struct _ChipsDataRepository {
     GObject parent_instance;

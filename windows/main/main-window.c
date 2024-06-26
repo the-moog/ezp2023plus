@@ -1,9 +1,9 @@
 #include "main-window.h"
 #include <glib/gi18n.h>
 #include "ezp_chips_data_file.h"
-#include "chips_data_repository.h"
+#include "chips-data-repository.h"
 #include "utilities.h"
-#include "gtk_string_list_extension.h"
+#include "gtk-string-list-extension.h"
 #include <ezp_prog.h>
 #include <ezp_errors.h>
 
