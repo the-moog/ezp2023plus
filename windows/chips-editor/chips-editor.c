@@ -19,7 +19,7 @@ struct _WindowChipsEditor {
 G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 
 static void
-add_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
+action_add_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(widget);
     ezp_chip_data new = {"FLASH_TYPE,MANUFACTURER,NAME", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     chips_data_repository_add(wce->repo, &new);
@@ -38,14 +38,14 @@ static void
 delete_chip_alert_response_cb(G_GNUC_UNUSED AdwAlertDialog *self, gchar *response, gpointer user_data) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR((gpointer) ((uint64_t *) user_data)[0]);
     if (!strcmp(response, "yes")) {
-        chips_data_repository_delete(wce->repo, ((uint64_t*) user_data)[1]);
+        chips_data_repository_delete(wce->repo, ((uint64_t *) user_data)[1]);
         chips_data_repository_save(wce->repo);
     }
     g_free(user_data);
 }
 
 static void
-delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
+action_delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(widget);
 
     //get selected row model from filtered list
@@ -53,17 +53,11 @@ delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNU
     GtkBitset *selection = gtk_selection_model_get_selection(GTK_SELECTION_MODEL(filtered_list));
     guint pos_in_filtered_list = gtk_bitset_get_minimum(selection);
     gtk_bitset_unref(selection);
-    gpointer row = g_list_model_get_item(filtered_list, pos_in_filtered_list);
+    gpointer row_model = g_list_model_get_item(filtered_list, pos_in_filtered_list);
 
-    //find selected row position in full list
-    GListModel *chips = G_LIST_MODEL(wce->store);
+    //find selected row model position in full list
     guint pos = 0;
-    for (guint i = 0; i < g_list_model_get_n_items(chips); ++i) {
-        if (g_list_model_get_item(chips, i) == row) {
-            pos = i;
-            break;
-        }
-    }
+    if (!g_list_store_find(wce->store, row_model, &pos)) return;
 
     gchar *alert_body = g_strdup_printf(gettext("%s will be deleted. This operation cannot be undone."),
                                         chips_data_repository_get_chips(wce->repo).data[pos].name);
@@ -80,10 +74,10 @@ delete_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNU
     adw_alert_dialog_set_default_response(alert, "no");
     adw_alert_dialog_set_close_response(alert, "no");
 
-    uint64_t *params = g_malloc(sizeof(uint64_t ) * 2);
-    params[0] = (uint64_t) wce;
-    params[1] = pos;
-    g_signal_connect(alert, "response", G_CALLBACK(delete_chip_alert_response_cb), params);
+    uint64_t *user_data = g_malloc(sizeof(uint64_t) * 2);
+    user_data[0] = (uint64_t) wce;
+    user_data[1] = pos;
+    g_signal_connect(alert, "response", G_CALLBACK(delete_chip_alert_response_cb), user_data);
 
     adw_dialog_present(ADW_DIALOG(alert), GTK_WIDGET(wce));
 }
@@ -100,10 +94,11 @@ column_view_right_click_pressed(G_GNUC_UNUSED GtkGestureClick *self, G_GNUC_UNUS
     if (!GTK_IS_LABEL(label_maybe)) return;
 
     const char *id = gtk_widget_get_name(label_maybe);
-    GListModel *model = G_LIST_MODEL(gtk_column_view_get_model(wce->chips_list));
+    GListModel *filtered_list = G_LIST_MODEL(gtk_column_view_get_model(wce->chips_list));
     guint pos = 0;
-    for (guint i = 0; g_list_model_get_n_items(model); ++i) {
-        if (!strcmp(id, chips_editor_list_row_get_id(EZP_CHIPS_EDITOR_LIST_ROW(g_list_model_get_item(model, i))))) {
+    for (guint i = 0; g_list_model_get_n_items(filtered_list); ++i) {
+        ChipsEditorListRow *row_model = EZP_CHIPS_EDITOR_LIST_ROW(g_list_model_get_item(filtered_list, i));
+        if (!strcmp(id, chips_editor_list_row_get_id(row_model))) {
             pos = i;
             break;
         }
@@ -116,29 +111,17 @@ column_view_right_click_pressed(G_GNUC_UNUSED GtkGestureClick *self, G_GNUC_UNUS
 }
 
 static void
-window_chips_editor_class_init(WindowChipsEditorClass *klass) {
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
-    gtk_widget_class_set_template_from_resource(widget_class,
-                                                "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chips-editor.ui");
-
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_bar);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_entry);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list_context_menu);
-
-    gtk_widget_class_install_action(widget_class, "win.add-chip", NULL, add_chip);
-    gtk_widget_class_install_action(widget_class, "win.delete-chip", NULL, delete_chip);
-
-    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_n, GDK_CONTROL_MASK, "win.add-chip", NULL);
-    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_Delete, GDK_NO_MODIFIER_MASK, "win.delete-chip", NULL);
-}
-
-static void
 search_text_changed_cb(GtkEditable *editable, gpointer data) {
     printf("search query: %s\n", gtk_editable_get_text(editable));
     WindowChipsEditor *self = EZP_WINDOW_CHIPS_EDITOR(data);
     gtk_string_filter_set_search(self->filter, gtk_editable_get_text(editable));
+}
+
+static void
+chips_list_activate_cb(G_GNUC_UNUSED GtkColumnView *self, guint position, gpointer user_data) {
+    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(user_data);
+    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, position);
+    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(wce));
 }
 
 static void
@@ -157,10 +140,22 @@ chips_list_changed_cb(G_GNUC_UNUSED ChipsDataRepository *repo, chips_list *list,
 }
 
 static void
-chips_list_activate_cb(G_GNUC_UNUSED GtkColumnView *self, guint position, gpointer user_data) {
-    WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(user_data);
-    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, position);
-    adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(wce));
+window_chips_editor_class_init(WindowChipsEditorClass *klass) {
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+    gtk_widget_class_set_template_from_resource(widget_class,
+                                                "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chips-editor.ui");
+
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list);
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_bar);
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_entry);
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list_context_menu);
+
+    gtk_widget_class_install_action(widget_class, "win.add-chip", NULL, action_add_chip);
+    gtk_widget_class_install_action(widget_class, "win.delete-chip", NULL, action_delete_chip);
+
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_n, GDK_CONTROL_MASK, "win.add-chip", NULL);
+    gtk_widget_class_add_binding_action(widget_class, GDK_KEY_Delete, GDK_NO_MODIFIER_MASK, "win.delete-chip", NULL);
 }
 
 static void
