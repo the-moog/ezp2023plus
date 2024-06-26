@@ -44,7 +44,7 @@
                                         <property name="tooltip-text" translatable="yes">Search</property>
                                         <property name="valign">center</property>
                                         <property name="icon-name">edit-find-symbolic</property>
-                                        <property name="active" bind-source="chips_searchbar" bind-property="search-mode-enabled" bind-flags="sync-create|bidirectional">False</property>
+                                        <property name="active" bind-source="chips_search_bar" bind-property="search-mode-enabled" bind-flags="sync-create|bidirectional">False</property>
                                     </object>
                                 </child>
                             </object>
@@ -57,10 +57,10 @@
                         <property name="vexpand">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                            <object class="GtkSearchBar" id="chips_searchbar">
+                            <object class="GtkSearchBar" id="chips_search_bar">
                                 <property name="vexpand-set">True</property>
                                 <property name="child">
-                                    <object class="GtkSearchEntry" id="chips_searchentry">
+                                    <object class="GtkSearchEntry" id="chips_search_entry">
                                         <property name="hexpand">False</property>
                                         <property name="vexpand">True</property>
                                         <property name="width-request">300</property>

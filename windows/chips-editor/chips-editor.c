@@ -8,9 +8,8 @@ struct _WindowChipsEditor {
     AdwWindow parent_instance;
 
     GtkColumnView *chips_list;
-    GtkToggleButton *search_button;
-    GtkSearchBar *chips_searchbar;
-    GtkSearchEntry *chips_searchentry;
+    GtkSearchBar *chips_search_bar;
+    GtkSearchEntry *chips_search_entry;
     GtkPopoverMenu *chips_list_context_menu;
     GtkStringFilter *filter;
     GListStore *store;
@@ -124,9 +123,8 @@ window_chips_editor_class_init(WindowChipsEditorClass *klass) {
                                                 "/dev/alexandro45/ezp2023plus/ui/windows/chips-editor/chips-editor.ui");
 
     gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, search_button);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_searchbar);
-    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_searchentry);
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_bar);
+    gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_search_entry);
     gtk_widget_class_bind_template_child(widget_class, WindowChipsEditor, chips_list_context_menu);
 
     gtk_widget_class_install_action(widget_class, "win.add-chip", NULL, add_chip);
@@ -182,8 +180,8 @@ window_chips_editor_init(WindowChipsEditor *self) {
     g_signal_connect_object(self->chips_list, "activate", G_CALLBACK(chips_list_activate_cb), self, G_CONNECT_DEFAULT);
     g_object_unref(selection);
 
-    gtk_search_bar_set_key_capture_widget(self->chips_searchbar, GTK_WIDGET (self));
-    g_signal_connect (self->chips_searchentry, "changed", G_CALLBACK(search_text_changed_cb), self);
+    gtk_search_bar_set_key_capture_widget(self->chips_search_bar, GTK_WIDGET (self));
+    g_signal_connect (self->chips_search_entry, "changed", G_CALLBACK(search_text_changed_cb), self);
 
     GtkGesture *click_gesture = gtk_gesture_click_new();
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click_gesture), GDK_BUTTON_SECONDARY);
