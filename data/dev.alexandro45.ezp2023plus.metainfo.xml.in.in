@@ -6,8 +6,15 @@
     <name>EZP2023+</name>
     <summary>Software for EZP2023+ programmer</summary>
     <description>
-        <p>EZP2023+ is a programmer for 24/25/93/95 flash chips.</p>
-        <p>This program allows you read/write flash chips using EZP2023+ programmer.</p>
+        <p>This is a software for a cheap Chinese programmer EZP2023+ for 24/25/93/95 flash chips.</p>
+        <p>Current software features:</p>
+        <ul>
+            <li>Test, read and write chips</li>
+            <li>View and edit dump files. Undo and redo operations are available</li>
+            <li>Open and save dump files</li>
+            <li>Chips database editor</li>
+            <li>Chips database file format is the same as in original Chinese software</li>
+        </ul>
     </description>
     <launchable type="desktop-id">dev.alexandro45.ezp2023plus.desktop</launchable>
     <screenshots>

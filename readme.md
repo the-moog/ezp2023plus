@@ -7,7 +7,7 @@ Software for EZP2023+(and maybe other EZP*) programmer
 * Test, read and write chips
 * View and edit dump files. Undo and redo operations are available
 * Open and save dump files
-* Chips editor (only editing. add and delete isn't implemented yet)
+* Chips database editor
 * Chips database file format is the same as in original Chinese software  
 
 ## Dependencies
