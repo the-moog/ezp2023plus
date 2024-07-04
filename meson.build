@@ -1,8 +1,8 @@
 project('ezp2023plus', 'c',
-        version : '0.1-dev',
+        version : '0.9',
         license : 'GPL-2.0-or-later',
         meson_version : '>= 0.59.0',
-        default_options : ['optimization=0', 'warning_level=2', 'buildtype=debug', 'c_std=gnu17']
+        default_options : ['warning_level=2', 'buildtype=debug', 'c_std=gnu17']
 )
 
 # Maybe will be used
