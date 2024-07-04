@@ -1,10 +1,11 @@
 [Desktop Entry]
 Name=EZP2023+
+Comment=Software for EZP2023 programmer
 Exec=appezp2023plus
+TryExec=appezp2023plus
 Icon=dev.alexandro45.ezp2023plus
-Keywords=ezp;ezp2023;
+Keywords=ezp;ezp2023;programmer;
 Terminal=false
 Type=Application
-Categories=GTK;
+Categories=GTK;GNOME;Development;Utility;Electronics;
 StartupNotify=true
-NoDisplay=true

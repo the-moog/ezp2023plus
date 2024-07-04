@@ -1,5 +1,5 @@
 pkgname=ezp2023plus
-pkgver=0.9
+pkgver=0.9.1
 pkgrel=1
 pkgdesc='Software for EZP2023 programmer'
 arch=('x86_64')
