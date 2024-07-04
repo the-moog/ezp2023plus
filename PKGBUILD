@@ -8,7 +8,7 @@ license=('GPL-2.0-or-later')
 makedepends=('meson')
 depends=('libusb' 'libadwaita' 'gtk4')
 source=("https://github.com/alexandro-45/ezp2023plus/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('194c393d26c7e0669fee9562d36a9d5d4c5f8c27b3dee14c3a26446e0a8fa46c')
+sha256sums=('18cd6a5bdcb76b61e2119ac7b66593b78da27a4aab782d2dbbc099a5b0fbd74f')
 
 build() {
     arch-meson $pkgname-$pkgver build --wrap-mode default
