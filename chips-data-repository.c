@@ -43,6 +43,16 @@ emit_chips_list(ChipsDataRepository *self) {
     g_signal_emit_by_name(self, "chips-list", &list);
 }
 
+static void
+fix_chips(ChipsDataRepository *self) {
+    for (guint i = 0; i < self->chips_count; ++i) {
+        if (self->chips[i].flash == 0) {
+            self->chips[i].flash = 1;
+        }
+        //TODO: add other checks
+    }
+}
+
 int
 chips_data_repository_read(ChipsDataRepository *self) {
     if (self->chips) {
@@ -54,6 +64,7 @@ chips_data_repository_read(ChipsDataRepository *self) {
     int ret = ezp_chips_data_read(&self->chips, self->file_path);
     if (ret >= 0) {
         self->chips_count = ret;
+        fix_chips(self);
         emit_chips_list(self);
         return 0;
     } else {

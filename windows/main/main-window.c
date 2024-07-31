@@ -109,6 +109,8 @@ hex_widget_draw_function(GtkDrawingArea *area, cairo_t *cr, G_GNUC_UNUSED int wi
     GdkRGBA color;
     WindowMain *wm = EZP_WINDOW_MAIN(data);
 
+    if (wm->hex_buffer_size == 0) g_error("wm->hex_buffer_size == 0");
+
     gtk_widget_get_color(GTK_WIDGET(area), &color);
     gdk_cairo_set_source_rgba(cr, &color);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);

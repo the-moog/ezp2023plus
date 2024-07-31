@@ -21,7 +21,7 @@ G_DEFINE_FINAL_TYPE (WindowChipsEditor, window_chips_editor, ADW_TYPE_WINDOW)
 static void
 action_add_chip(GtkWidget *widget, G_GNUC_UNUSED const char *action_name, G_GNUC_UNUSED GVariant *parameter) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(widget);
-    ezp_chip_data new = {"FLASH_TYPE,MANUFACTURER,NAME", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    ezp_chip_data new = {"FLASH_TYPE,MANUFACTURER,NAME", 0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
     chips_data_repository_add(wce->repo, &new);
     if (chips_data_repository_save(wce->repo) != 0) {
         AdwAlertDialog *dlg = ADW_ALERT_DIALOG(
