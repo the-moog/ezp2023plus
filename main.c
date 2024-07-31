@@ -103,19 +103,24 @@ char *prepare_data_file() {
     GFile *user_file = g_file_new_build_filename(g_get_user_data_dir(), PROJECT_NAME, "chips.dat", NULL);
     char *path = g_file_get_path(user_file);
     if (!g_file_query_exists(user_file, NULL)) {
-        GFile *system_file = g_file_new_build_filename(DATA_DIR, "chips.dat", NULL);
-        if (g_file_query_exists(system_file, NULL)) {
-            GError *error = NULL;
-            gboolean res = g_file_copy(system_file, user_file, G_FILE_COPY_NONE, NULL, NULL, NULL, &error);
-            if (error) {
-                printf("%s\n", error->message);
-                g_error_free(error);
+        const gchar * const* dirs = g_get_system_data_dirs();
+        for (const gchar * const* dir = dirs; *dir; dir++) {
+            GFile *system_file = g_file_new_build_filename(*dir, PROJECT_NAME, "chips.dat", NULL);
+            if (g_file_query_exists(system_file, NULL)) {
+                GError *error = NULL;
+                gboolean res = g_file_copy(system_file, user_file, G_FILE_COPY_NONE, NULL, NULL, NULL, &error);
+                if (error) {
+                    printf("%s\n", error->message);
+                    g_error_free(error);
+                }
+                if (!res) {
+                    printf("Can't copy chips datafile\n");
+                }
+                g_object_unref(system_file);
+                break;
             }
-            if (!res) {
-                printf("Can't copy chips datafile\n");
-            }
+            g_object_unref(system_file);
         }
-        g_object_unref(system_file);
     }
     g_object_unref(user_file);
     return path;
@@ -128,7 +133,8 @@ main(int argc, char **argv) {
         printf("ezp_init failed\n");
         return status;
     }
-    bindtextdomain(TRANSLATION_DOMAIN, LOCALE_DIR);
+    const char *locale_dir_override = g_getenv("EZP_LOCALE_DIR");
+    bindtextdomain(TRANSLATION_DOMAIN, locale_dir_override ? locale_dir_override : LOCALE_DIR);
     bind_textdomain_codeset(TRANSLATION_DOMAIN, "UTF-8");
     textdomain(TRANSLATION_DOMAIN);
 
