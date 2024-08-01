@@ -34,6 +34,7 @@ else
     typelibdir = get_option('libdir') / 'girepository-1.0'
     vapidir = get_option('datadir') / 'vala' / 'vapi'
 endif
+sysconfdir = get_option('sysconfdir')
 
 translation_domain = 'appezp2023plus'
 

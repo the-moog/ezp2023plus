@@ -63,3 +63,8 @@ install_data(
     'chips.dat',
     install_dir : datafilesdir
 )
+
+install_data(
+    '45-ezp2023.rules',
+    install_dir : sysconfdir / 'udev' / 'rules.d'
+)
