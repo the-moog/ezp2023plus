@@ -103,11 +103,19 @@ char *prepare_data_file() {
     GFile *user_file = g_file_new_build_filename(g_get_user_data_dir(), PROJECT_NAME, "chips.dat", NULL);
     char *path = g_file_get_path(user_file);
     if (!g_file_query_exists(user_file, NULL)) {
+        GError *error = NULL;
+        GFile *user_data_dir = g_file_get_parent(user_file);
+        if (!g_file_query_exists(user_data_dir, NULL)) {
+            g_file_make_directory_with_parents(user_data_dir, NULL, &error);
+        }
+        if (error) { //TODO: show this error in GUI
+            g_error("Failed to create user data directory: %s\n", error->message);
+        }
+
         const gchar * const* dirs = g_get_system_data_dirs();
         for (const gchar * const* dir = dirs; *dir; dir++) {
             GFile *system_file = g_file_new_build_filename(*dir, PROJECT_NAME, "chips.dat", NULL);
             if (g_file_query_exists(system_file, NULL)) {
-                GError *error = NULL;
                 gboolean res = g_file_copy(system_file, user_file, G_FILE_COPY_NONE, NULL, NULL, NULL, &error);
                 if (error) {
                     printf("%s\n", error->message);
