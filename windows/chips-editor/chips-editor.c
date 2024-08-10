@@ -120,7 +120,16 @@ search_text_changed_cb(GtkEditable *editable, gpointer data) {
 static void
 chips_list_activate_cb(G_GNUC_UNUSED GtkColumnView *self, guint position, gpointer user_data) {
     WindowChipsEditor *wce = EZP_WINDOW_CHIPS_EDITOR(user_data);
-    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, position);
+
+    //get selected row model from filtered list
+    GListModel *filtered_list = G_LIST_MODEL(gtk_column_view_get_model(wce->chips_list));
+    gpointer row_model = g_list_model_get_item(filtered_list, position);
+
+    //find selected row model position in full list
+    guint real_pos = 0;
+    if (!g_list_store_find(wce->store, row_model, &real_pos)) return;
+
+    DialogChipsEdit *dlg = dialog_chips_edit_new(wce->repo, real_pos);
     adw_dialog_present(ADW_DIALOG(dlg), GTK_WIDGET(wce));
 }
 
