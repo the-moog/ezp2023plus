@@ -418,17 +418,14 @@ chip_read_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer 
         case EZP_FLASH_SIZE_OR_PAGE_INVALID:
             printf("EZP_FLASH_SIZE_OR_PAGE_INVALID\n");
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_FLASH_SIZE_OR_PAGE_INVALID");
-            g_object_unref(task);
             break;
         case EZP_LIBUSB_ERROR:
             printf("EZP_LIBUSB_ERROR\n");
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_LIBUSB_ERROR");
-            g_object_unref(task);
             break;
         default:
             printf("Unknown error: %d\n", ret);
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "UNKNOWN_ERROR");
-            g_object_unref(task);
             break;
     }
     g_object_unref(task);
@@ -526,16 +523,13 @@ chip_write_task_func(GTask *task, gpointer source_object, G_GNUC_UNUSED gpointer
             break;
         case EZP_FLASH_SIZE_OR_PAGE_INVALID:
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_FLASH_SIZE_OR_PAGE_INVALID");
-            g_object_unref(task);
             break;
         case EZP_LIBUSB_ERROR:
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "EZP_LIBUSB_ERROR");
-            g_object_unref(task);
             break;
         default:
             printf("Unknown error: %d\n", ret);
             g_task_return_new_error(task, domain_gquark, (45 << 16) | ret, "UNKNOWN_ERROR");
-            g_object_unref(task);
             break;
     }
     g_object_unref(task);
