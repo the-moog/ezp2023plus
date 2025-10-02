@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -e
-set -v
 
 THIS_FILE=$(basename "$0"); echo "SCRIPT: ${THIS_FILE}"
 PROJECT_DIR=$(realpath "$(dirname "$0")"); echo "PROJECT DIR: ${PROJECT_DIR}"
@@ -19,13 +18,6 @@ mkdir "${BUILD_OUTPUT_DIR}"
 PROJECT_VERSION=$(<<< "$(meson introspect --projectinfo "${BUILD_DIR}")" jq -r ".version")
 
 function appimage () {
-  declare -I APP_IMAGE
-  declare -I BUILD_DIR
-  declare -I APP_DIR
-  declare -I PROJECT_DIR
-
-  set -x
-
   echo "Building an AppImage"
   if [ ! -e "$(command -v zenity)" ]; then
     echo "zenity is needed to build an AppImage."
