@@ -58,8 +58,22 @@ Software for EZP2023+(and maybe other EZP*) programmer
 
     or
 
-    $ make AppImage
+    $ make appImage
+
+    or
+
+    $ make PREFIX=~/.local build
 
 ### Install
 
     $ sudo meson install -C buildDir
+
+    or, if you can't sudo
+
+    $ meson setup --prefix ~/.local buildDir .
+    $ meson compile -C buildDir
+    $ meson install -C buildDir
+
+    or, using make (and optionally an install prefix)
+
+    $ make [ PREFIX=~/.local ] install
